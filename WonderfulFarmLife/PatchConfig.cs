@@ -36,12 +36,7 @@ namespace WonderfulFarmLife
 
         public bool UsingTSE { get; set; }
 
-        public PatchConfig()
-        {
-            base.\u002Ector();
-        }
-
-        public virtual T GenerateDefaultConfig<T>() where T : Config
+        public override T GenerateDefaultConfig<T>()
         {
             this.EditPath = true;
             this.RemovePathAlltogether = false;
