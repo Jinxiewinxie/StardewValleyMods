@@ -1,14 +1,13 @@
 ﻿{
   "Name": "WonderfulFarmLife",
-  "Authour": "Jinxiewinxie and TaintedWheat",
+  "Author": "Jinxiewinxie and TaintedWheat",
   "Version": {
-    "MajorVersion": 0,
+    "MajorVersion": 1,
     "MinorVersion": 0,
     "PatchVersion": 0,
     "Build": ""
   },
   "Description": "Adds a bunch of map edits to your farm",
-  "UniqueID": "",
-  "PerSaveConfigs": false,
+  "UniqueID": "WonderfulFarmLife",
   "EntryDll": "WonderfulFarmLife.dll"
 }

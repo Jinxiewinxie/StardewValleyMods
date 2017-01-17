@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -14,7 +13,6 @@ using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 using xTile.Dimensions;
-using xTile.Display;
 using xTile.ObjectModel;
 using xTile.Tiles;
 using Object = StardewValley.Object;
@@ -24,17 +22,17 @@ namespace WonderfulFarmLife
 {
     public class WonderfulFarmLife : Mod
     {
-        private string modPath = "";
-        public bool PetBowlFilled = false;
-        public bool farmSheetPatched = false;
-        public int tickCount = 0;
+        public bool PetBowlFilled;
+        public bool FarmSheetPatched;
+        public int TickCount = 0;
 
         public PatchConfig ModConfig { get; private set; }
 
-        public override void Entry(params object[] objects)
+        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
+        public override void Entry(IModHelper helper)
         {
-            this.modPath = this.PathOnDisk;
-            this.ModConfig = new PatchConfig().InitializeConfig(this.BaseConfigPath);
+            this.ModConfig = helper.ReadConfig<PatchConfig>();
             GameEvents.UpdateTick += this.Event_UpdateTick;
             LocationEvents.CurrentLocationChanged += this.Event_CurrentLocationChanged;
             TimeEvents.DayOfMonthChanged += this.Event_DayOfMonthChanged;
@@ -133,7 +131,7 @@ namespace WonderfulFarmLife
             Farm farm = Game1.getFarm();
 
             TileSheet tileSheet = farm.map.TileSheets[Tile.getTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
-            Dictionary<TileSheet, Texture2D> dictionary = (Dictionary<TileSheet, Texture2D>)typeof(XnaDisplayDevice).GetField("m_tileSheetTextures", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Game1.mapDisplayDevice as XnaDisplayDevice);
+            var dictionary = this.Helper.Reflection.GetPrivateValue<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures");
             Texture2D targetTexture = dictionary[tileSheet];
             int num = 1100;
             Dictionary<int, int> spriteOverrides = new Dictionary<int, int>();
@@ -141,7 +139,7 @@ namespace WonderfulFarmLife
                 spriteOverrides.Add(key, 1975 + key);
             if (targetTexture != null)
                 dictionary[tileSheet] = this.PatchTexture(targetTexture, Game1.currentSeason + "_wonderful.png", spriteOverrides, 16, 16);
-            this.farmSheetPatched = true;
+            this.FarmSheetPatched = true;
             GameEvents.SecondUpdateTick -= this.Event_SecondUpdateTick;
         }
 
@@ -155,8 +153,8 @@ namespace WonderfulFarmLife
             TileSheet tileSheet = farm.map.TileSheets[Tile.getTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
 
             if (this.ModConfig.RemoveShippingBin)
-                typeof(Farm).GetField("shippingBinLid", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(farm, null);
-            Dictionary<TileSheet, Texture2D> dictionary = (Dictionary<TileSheet, Texture2D>)typeof(XnaDisplayDevice).GetField("m_tileSheetTextures", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Game1.mapDisplayDevice as XnaDisplayDevice);
+                this.Helper.Reflection.GetPrivateField<TemporaryAnimatedSprite>(farm, "shippingBinLid").SetValue(null);
+            var dictionary = this.Helper.Reflection.GetPrivateValue<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures");
             Texture2D targetTexture = dictionary[tileSheet];
             int num = 1100;
             Dictionary<int, int> spriteOverrides = new Dictionary<int, int>();
@@ -164,7 +162,7 @@ namespace WonderfulFarmLife
                 spriteOverrides.Add(key, 1975 + key);
             if (targetTexture != null)
                 dictionary[tileSheet] = this.PatchTexture(targetTexture, Game1.currentSeason + "_wonderful.png", spriteOverrides, 16, 16);
-            if (!this.farmSheetPatched)
+            if (!this.FarmSheetPatched)
                 GameEvents.SecondUpdateTick += this.Event_SecondUpdateTick;
         }
 
@@ -1986,7 +1984,7 @@ namespace WonderfulFarmLife
                 targetTexture = new Texture2D(Game1.graphics.GraphicsDevice, targetTexture.Width, bottom);
                 targetTexture.SetData(data2);
             }
-            using (FileStream fileStream = new FileStream(Path.Combine(this.modPath, "overrides\\" + overridingTexturePath), FileMode.Open))
+            using (FileStream fileStream = File.Open(Path.Combine(this.Helper.DirectoryPath, "overrides", overridingTexturePath), FileMode.Open))
             {
                 Texture2D texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, fileStream);
                 foreach (KeyValuePair<int, int> spriteOverride in spriteOverrides)
