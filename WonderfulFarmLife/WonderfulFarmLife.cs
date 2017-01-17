@@ -46,7 +46,7 @@ namespace WonderfulFarmLife
             if (!Game1.hasLoadedGame || Game1.currentLocation != farm)
                 return;
 
-            TileSheet tileSheet = farm.map.TileSheets[Tile.getTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
+            TileSheet tileSheet = farm.map.TileSheets[Tile.GetTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
             tileSheet.SheetSize = new Size(tileSheet.SheetSize.Width, tileSheet.SheetSize.Height + 44);
             List<ResourceClump> resourceClumps = farm.resourceClumps;
 
@@ -130,7 +130,7 @@ namespace WonderfulFarmLife
         {
             Farm farm = Game1.getFarm();
 
-            TileSheet tileSheet = farm.map.TileSheets[Tile.getTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
+            TileSheet tileSheet = farm.map.TileSheets[Tile.GetTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
             var dictionary = this.Helper.Reflection.GetPrivateValue<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures");
             Texture2D targetTexture = dictionary[tileSheet];
             int num = 1100;
@@ -150,7 +150,7 @@ namespace WonderfulFarmLife
             if (e.NewLocation != farm)
                 return;
 
-            TileSheet tileSheet = farm.map.TileSheets[Tile.getTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
+            TileSheet tileSheet = farm.map.TileSheets[Tile.GetTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
 
             if (this.ModConfig.RemoveShippingBin)
                 this.Helper.Reflection.GetPrivateField<TemporaryAnimatedSprite>(farm, "shippingBinLid").SetValue(null);
@@ -311,7 +311,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> PathEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
             {
             new Tile(0, 70, 15, 2232, tileSheetIndex),
@@ -333,7 +333,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> GreenHouseArchEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
             {
             new Tile(4, 25, 10, 2626, tileSheetIndex),
@@ -393,7 +393,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> TegoFixes(GameLocation gl)
         {
-            Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
             {
             new Tile(3, 58, 5, -1),
@@ -414,7 +414,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> RemoveShippingBinEdits(GameLocation gl)
         {
-            Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(3, 71, 13, -1),
@@ -427,7 +427,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> RemovePathEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 75, 17, 227, tileSheetIndex),
@@ -441,7 +441,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> TelescopeEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 16, 4, 312, tileSheetIndex),
@@ -756,7 +756,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> MemorialArea(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 3, 7, 2283, tileSheetIndex),
@@ -1079,7 +1079,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> MemorialAreaArch(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(4, 15, 16, 2388, tileSheetIndex),
@@ -1104,7 +1104,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> PicnicBlanketEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 33, 45, 2992, tileSheetIndex),
@@ -1137,7 +1137,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> StoneBridgeEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 40, 48, -1),
@@ -1245,7 +1245,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> PicnicAreaTableEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(1, 36, 44, 2970, tileSheetIndex),
@@ -1259,7 +1259,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> TreeSwingEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 32, 42, 433, tileSheetIndex),
@@ -1305,7 +1305,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> DogHouseEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 51, 5, 838, tileSheetIndex),
@@ -1360,7 +1360,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> YardGardenEditsAndBinClutter(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 57, 8, -1),
@@ -1506,7 +1506,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> PatioEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
       {
         new Tile(0, 71, 7, -1),
@@ -1839,7 +1839,7 @@ namespace WonderfulFarmLife
 
         private List<Tile> FarmStandEdits(GameLocation gl)
         {
-            int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+            int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>()
       {
         new Tile(0, 71, 12, 175, tileSheetIndex),
@@ -1927,27 +1927,27 @@ namespace WonderfulFarmLife
             {
                 foreach (Tile tile in tileArray)
                 {
-                    if (tile.tileIndex < 0)
+                    if (tile.TileIndex < 0)
                     {
-                        gl.removeTile(tile.x, tile.y, tile.layer);
-                        gl.waterTiles[tile.x, tile.y] = false;
+                        gl.removeTile(tile.X, tile.Y, tile.LayerName);
+                        gl.waterTiles[tile.X, tile.Y] = false;
 
                         foreach (LargeTerrainFeature feature in gl.largeTerrainFeatures)
                         {
-                            if (feature.tilePosition.X == tile.x && feature.tilePosition.Y == tile.y)
+                            if (feature.tilePosition.X == tile.X && feature.tilePosition.Y == tile.Y)
                             {
                                 gl.largeTerrainFeatures.Remove(feature);
                                 break;
                             }
                         }
                     }
-                    else if (gl.map.GetLayer(tile.layer).Tiles[tile.x, tile.y] == null || gl.map.GetLayer(tile.layer).Tiles[tile.x, tile.y].TileSheet.Id != tile.tileSheet)
+                    else if (gl.map.GetLayer(tile.LayerName).Tiles[tile.X, tile.Y] == null || gl.map.GetLayer(tile.LayerName).Tiles[tile.X, tile.Y].TileSheet.Id != tile.TileSheet)
                     {
-                        int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
-                        gl.map.GetLayer(tile.layer).Tiles[tile.x, tile.y] = new StaticTile(gl.map.GetLayer(tile.layer), gl.map.TileSheets[tileSheetIndex], 0, tile.tileIndex);
+                        int tileSheetIndex = Tile.GetTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
+                        gl.map.GetLayer(tile.LayerName).Tiles[tile.X, tile.Y] = new StaticTile(gl.map.GetLayer(tile.LayerName), gl.map.TileSheets[tileSheetIndex], 0, tile.TileIndex);
                     }
                     else
-                        gl.setMapTileIndex(tile.x, tile.y, tile.tileIndex, gl.map.GetLayer(tile.layer).Id);
+                        gl.setMapTileIndex(tile.X, tile.Y, tile.TileIndex, gl.map.GetLayer(tile.LayerName).Id);
                 }
             }
             finally
@@ -1960,14 +1960,14 @@ namespace WonderfulFarmLife
         {
             foreach (Tile tile in tileArray)
             {
-                if (tile.layerIndex < 0 || tile.layerIndex >= gl.map.Layers.Count)
-                    tile.layerIndex = Tile.getLayerIndex(tile.layer, gl.map.Layers);
-                if (tile.tileSheetIndex < 0 || tile.tileSheetIndex >= gl.map.TileSheets.Count)
-                    tile.tileSheetIndex = Tile.getTileSheetIndex(tile.tileSheet, gl.map.TileSheets);
-                if (string.IsNullOrEmpty(tile.layer))
-                    tile.layer = Tile.getLayerName(tile.layerIndex, gl.map.Layers);
-                if (string.IsNullOrEmpty(tile.tileSheet))
-                    tile.tileSheet = Tile.getTileSheetName(tile.tileSheetIndex, gl.map.TileSheets);
+                if (tile.LayerIndex < 0 || tile.LayerIndex >= gl.map.Layers.Count)
+                    tile.LayerIndex = Tile.GetLayerIndex(tile.LayerName, gl.map.Layers);
+                if (tile.TileSheetIndex < 0 || tile.TileSheetIndex >= gl.map.TileSheets.Count)
+                    tile.TileSheetIndex = Tile.GetTileSheetIndex(tile.TileSheet, gl.map.TileSheets);
+                if (string.IsNullOrEmpty(tile.LayerName))
+                    tile.LayerName = Tile.GetLayerName(tile.LayerIndex, gl.map.Layers);
+                if (string.IsNullOrEmpty(tile.TileSheet))
+                    tile.TileSheet = Tile.GetTileSheetName(tile.TileSheetIndex, gl.map.TileSheets);
             }
             return tileArray;
         }

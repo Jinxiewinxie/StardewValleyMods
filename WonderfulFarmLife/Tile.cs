@@ -4,68 +4,115 @@ using xTile.Tiles;
 
 namespace WonderfulFarmLife
 {
-    public class Tile
+    /// <summary>Encapsulates interaction with a map tile.</summary>
+    internal class Tile
     {
-        public int layerIndex;
-        public int x;
-        public int y;
-        public int tileIndex;
-        public int tileSheetIndex;
-        public string layer;
-        public string tileSheet;
+        /*********
+        ** Accessors
+        *********/
+        /// <summary>The map layer index which has this tile.</summary>
+        public int LayerIndex;
 
+        /// <summary>The tile's X coordinate on the map.</summary>
+        public int X;
+
+        /// <summary>The tile's Y coordinate on the map.</summary>
+        public int Y;
+
+        /// <summary>The tile's index in the map's tile array.</summary>
+        public int TileIndex;
+
+        /// <summary>The tilesheet index which has the tile.</summary>
+        public int TileSheetIndex;
+
+        /// <summary>The layer name which has the tile.</summary>
+        public string LayerName;
+
+        /// <summary>The tilesheet name which has the tile.</summary>
+        public string TileSheet;
+
+
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        /// <param name="layerIndex">The map layer index which has this tile.</param>
+        /// <param name="x">The tile's X coordinate on the map.</param>
+        /// <param name="y">The tile's Y coordinate on the map.</param>
+        /// <param name="tileIndex">The tile's index in the map's tile array.</param>
+        /// <param name="tileSheetIndex">The tilesheet index which has the tile.</param>
+        /// <param name="tileSheet">The tilesheet name which has the tile.</param>
         public Tile(int layerIndex, int x, int y, int tileIndex, int tileSheetIndex = -1, string tileSheet = "")
         {
-            this.layerIndex = layerIndex;
-            this.x = x;
-            this.y = y;
-            this.tileIndex = tileIndex;
-            this.tileSheetIndex = tileSheetIndex;
-            this.tileSheet = tileSheet;
+            this.LayerIndex = layerIndex;
+            this.X = x;
+            this.Y = y;
+            this.TileIndex = tileIndex;
+            this.TileSheetIndex = tileSheetIndex;
+            this.TileSheet = tileSheet;
         }
 
-        public Tile(string layer, int x, int y, int tileIndex, int tileSheetIndex = -1, string tileSheet = "")
+        /// <summary>Construct an instance.</summary>
+        /// <param name="layerName">The map layer index which has this tile.</param>
+        /// <param name="x">The tile's X coordinate on the map.</param>
+        /// <param name="y">The tile's Y coordinate on the map.</param>
+        /// <param name="tileIndex">The tile's index in the map's tile array.</param>
+        /// <param name="tileSheetIndex">The tilesheet index which has the tile.</param>
+        /// <param name="tileSheet">The tilesheet name which has the tile.</param>
+        public Tile(string layerName, int x, int y, int tileIndex, int tileSheetIndex = -1, string tileSheet = "")
         {
-            this.layer = layer;
-            this.x = x;
-            this.y = y;
-            this.tileIndex = tileIndex;
-            this.tileSheetIndex = tileSheetIndex;
-            this.tileSheet = tileSheet;
+            this.LayerName = layerName;
+            this.X = x;
+            this.Y = y;
+            this.TileIndex = tileIndex;
+            this.TileSheetIndex = tileSheetIndex;
+            this.TileSheet = tileSheet;
         }
 
-        public static int getTileSheetIndex(string tsn, ReadOnlyCollection<TileSheet> tileSheets)
+        /// <summary>Get a tilesheet index from its name.</summary>
+        /// <param name="name">The tilesheet name.</param>
+        /// <param name="tileSheets">The current tilesheets.</param>
+        public static int GetTileSheetIndex(string name, ReadOnlyCollection<TileSheet> tileSheets)
         {
-            for (int index = 0; index < tileSheets.Count; ++index)
+            for (int i = 0; i < tileSheets.Count; i++)
             {
-                if (tileSheets[index].Id.Equals(tsn))
-                    return index;
+                if (tileSheets[i].Id.Equals(name))
+                    return i;
             }
             return 0;
         }
 
-        public static string getTileSheetName(int tsi, ReadOnlyCollection<TileSheet> tileSheets)
+        /// <summary>Get a tilesheet name from its index.</summary>
+        /// <param name="index">The tilesheet index.</param>
+        /// <param name="tileSheets">The current tilesheets.</param>
+        public static string GetTileSheetName(int index, ReadOnlyCollection<TileSheet> tileSheets)
         {
-            if (tsi >= tileSheets.Count)
-                return tileSheets[0].Id;
-            return tileSheets[tsi].Id;
+            return index < tileSheets.Count
+                ? tileSheets[index].Id
+                : tileSheets[0].Id;
         }
 
-        public static int getLayerIndex(string ln, ReadOnlyCollection<Layer> layers)
+        /// <summary>Get a layer index from its name.</summary>
+        /// <param name="name">The layer name.</param>
+        /// <param name="layers">The current map layers.</param>
+        public static int GetLayerIndex(string name, ReadOnlyCollection<Layer> layers)
         {
-            for (int index = 0; index < layers.Count; ++index)
+            for (int i = 0; i < layers.Count; i++)
             {
-                if (layers[index].Id.Equals(ln))
-                    return index;
+                if (layers[i].Id.Equals(name))
+                    return i;
             }
             return 0;
         }
 
-        public static string getLayerName(int li, ReadOnlyCollection<Layer> layers)
+        /// <summary>Get a layer name from its index.</summary>
+        /// <param name="index">The layer index.</param>
+        /// <param name="layers">The current map layers.</param>
+        public static string GetLayerName(int index, ReadOnlyCollection<Layer> layers)
         {
-            if (li >= layers.Count)
-                return layers[0].Id;
-            return layers[li].Id;
+            return index < layers.Count
+                ? layers[index].Id
+                : layers[0].Id;
         }
     }
 }
