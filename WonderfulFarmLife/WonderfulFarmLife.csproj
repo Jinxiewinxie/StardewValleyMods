@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -39,10 +39,18 @@
     <Compile Include="WonderfulFarmLife.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="overrides\fall_wonderful.png" />
-    <Content Include="overrides\spring_wonderful.png" />
-    <Content Include="overrides\summer_wonderful.png" />
-    <Content Include="overrides\winter_wonderful.png" />
+    <Content Include="overrides\fall_wonderful.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="overrides\spring_wonderful.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="overrides\summer_wonderful.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="overrides\winter_wonderful.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
@@ -57,6 +65,9 @@
     <Error Condition="!Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.1.4.0\build\Pathoschild.Stardew.ModBuildConfig.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Pathoschild.Stardew.ModBuildConfig.1.4.0\build\Pathoschild.Stardew.ModBuildConfig.targets'))" />
   </Target>
   <Target Name="AfterBuild">
+    <ItemGroup>
+      <OverrideFiles Include="$(TargetDir)\overrides\**\*.*" />
+    </ItemGroup>
     <PropertyGroup>
       <ModPath>$(GamePath)\Mods\$(TargetName)</ModPath>
     </PropertyGroup>
@@ -64,6 +75,6 @@
     <Copy SourceFiles="$(TargetDir)\$(TargetName).pdb" DestinationFolder="$(ModPath)" Condition="Exists('$(TargetDir)\$(TargetName).pdb')" />
     <Copy SourceFiles="$(TargetDir)\$(TargetName).dll.mdb" DestinationFolder="$(ModPath)" Condition="Exists('$(TargetDir)\$(TargetName).dll.mdb')" />
     <Copy SourceFiles="$(ProjectDir)manifest.json" DestinationFolder="$(ModPath)" />
-    <Copy SourceFiles="$(TargetDir)\overrides\*.png" DestinationFolder="$(ModPath)\overrides" />
+    <Copy SourceFiles="@(OverrideFiles)" DestinationFolder="$(ModPath)\overrides\%(RecursiveDir)" />
   </Target>
 </Project>
