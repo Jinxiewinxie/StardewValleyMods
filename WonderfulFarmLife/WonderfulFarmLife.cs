@@ -20,19 +20,18 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace WonderfulFarmLife
 {
-    public class WonderfulFarmLife : Mod
+    internal class WonderfulFarmLife : Mod
     {
         public bool PetBowlFilled;
         public bool FarmSheetPatched;
         public int TickCount = 0;
-
-        public PatchConfig ModConfig { get; private set; }
+        public ModConfig Config;
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            this.ModConfig = helper.ReadConfig<PatchConfig>();
+            this.Config = helper.ReadConfig<ModConfig>();
             GameEvents.UpdateTick += this.Event_UpdateTick;
             LocationEvents.CurrentLocationChanged += this.Event_CurrentLocationChanged;
             TimeEvents.DayOfMonthChanged += this.Event_DayOfMonthChanged;
@@ -55,35 +54,35 @@ namespace WonderfulFarmLife
                 if (clump.occupiesTile(71, 13) || clump.occupiesTile(72, 13) || clump.occupiesTile(71, 14) || clump.occupiesTile(72, 14))
                     resourceClumps.Remove(clump);
             }
-            if (this.ModConfig.ShowFarmStand)
+            if (this.Config.ShowFarmStand)
             {
                 this.PatchMap(farm, this.FarmStandEdits(farm));
                 farm.setTileProperty(74, 15, "Buildings", "Action", "NewShippingBin");
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2058@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2083@Passable", new PropertyValue(true));
             }
-            if (this.ModConfig.EditPath)
+            if (this.Config.EditPath)
                 this.PatchMap(farm, this.PathEdits(farm));
-            if (this.ModConfig.RemovePathAlltogether)
+            if (this.Config.RemovePathAlltogether)
             {
                 this.PatchMap(farm, this.PathEdits(farm));
                 this.PatchMap(farm, this.RemovePathEdits(farm));
             }
-            if (this.ModConfig.RemoveShippingBin)
+            if (this.Config.RemoveShippingBin)
                 this.PatchMap(farm, this.RemoveShippingBinEdits(farm));
-            if (this.ModConfig.ShowPatio)
+            if (this.Config.ShowPatio)
             {
                 this.PatchMap(farm, this.PatioEdits(farm));
                 farm.setTileProperty(68, 6, "Buildings", "Action", "kitchen");
                 farm.setTileProperty(69, 6, "Buildings", "Action", "kitchen");
             }
-            if (this.ModConfig.ShowBinClutter)
+            if (this.Config.ShowBinClutter)
             {
                 this.PatchMap(farm, this.YardGardenEditsAndBinClutter(farm));
                 farm.setTileProperty(75, 4, "Buildings", "Action", "Jukebox");
                 farm.setTileProperty(75, 5, "Buildings", "Action", "Jukebox");
             }
-            if (this.ModConfig.AddDogHouse)
+            if (this.Config.AddDogHouse)
             {
                 this.PatchMap(farm, this.DogHouseEdits(farm));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2718@Passable", new PropertyValue(true));
@@ -91,13 +90,13 @@ namespace WonderfulFarmLife
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2720@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2721@Passable", new PropertyValue(true));
             }
-            if (this.ModConfig.AddGreenHouseArch)
+            if (this.Config.AddGreenHouseArch)
                 this.PatchMap(farm, this.GreenHouseArchEdits(farm));
-            if (this.ModConfig.ShowPicnicBlanket)
+            if (this.Config.ShowPicnicBlanket)
                 this.PatchMap(farm, this.PicnicBlanketEdits(farm));
-            if (this.ModConfig.ShowPicnicTable)
+            if (this.Config.ShowPicnicTable)
                 this.PatchMap(farm, this.PicnicAreaTableEdits(farm));
-            if (this.ModConfig.ShowTreeSwing)
+            if (this.Config.ShowTreeSwing)
             {
                 this.PatchMap(farm, this.TreeSwingEdits(farm));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2944@Passable", new PropertyValue(true));
@@ -107,9 +106,9 @@ namespace WonderfulFarmLife
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2966@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2967@Passable", new PropertyValue(true));
             }
-            if (this.ModConfig.AddStoneBridge)
+            if (this.Config.AddStoneBridge)
                 this.PatchMap(farm, this.StoneBridgeEdits(farm));
-            if (this.ModConfig.AddTelescopeArea)
+            if (this.Config.AddTelescopeArea)
             {
                 this.PatchMap(farm, this.TelescopeEdits(farm));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2619@Passable", new PropertyValue(true));
@@ -117,11 +116,11 @@ namespace WonderfulFarmLife
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2621@Passable", new PropertyValue(true));
                 farm.setTileProperty(30, 2, "Buildings", "Action", "TelescopeMessage");
             }
-            if (this.ModConfig.ShowMemorialArea)
+            if (this.Config.ShowMemorialArea)
                 this.PatchMap(farm, this.MemorialArea(farm));
-            if (this.ModConfig.ShowMemorialAreaArch)
+            if (this.Config.ShowMemorialAreaArch)
                 this.PatchMap(farm, this.MemorialAreaArch(farm));
-            if (this.ModConfig.UsingTSE)
+            if (this.Config.UsingTSE)
                 this.PatchMap(farm, this.TegoFixes(farm));
             GameEvents.UpdateTick -= this.Event_UpdateTick;
         }
@@ -152,7 +151,7 @@ namespace WonderfulFarmLife
 
             TileSheet tileSheet = farm.map.TileSheets[Tile.GetTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
 
-            if (this.ModConfig.RemoveShippingBin)
+            if (this.Config.RemoveShippingBin)
                 this.Helper.Reflection.GetPrivateField<TemporaryAnimatedSprite>(farm, "shippingBinLid").SetValue(null);
             var dictionary = this.Helper.Reflection.GetPrivateValue<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures");
             Texture2D targetTexture = dictionary[tileSheet];

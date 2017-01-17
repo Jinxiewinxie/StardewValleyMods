@@ -1,6 +1,6 @@
 namespace WonderfulFarmLife
 {
-    public class PatchConfig
+    public class ModConfig
     {
         public bool EditPath { get; set; } = true;
 
