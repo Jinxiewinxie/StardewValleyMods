@@ -24,22 +24,22 @@ namespace WonderfulFarmLife
 {
     public class WonderfulFarmLife : Mod
     {
-        private static string modPath = "";
-        public static bool PetBowlFilled = false;
-        public static bool farmSheetPatched = false;
-        public static int tickCount = 0;
+        private string modPath = "";
+        public bool PetBowlFilled = false;
+        public bool farmSheetPatched = false;
+        public int tickCount = 0;
 
-        public static PatchConfig ModConfig { get; private set; }
+        public PatchConfig ModConfig { get; private set; }
 
         public override void Entry(params object[] objects)
         {
-            WonderfulFarmLife.modPath = this.PathOnDisk;
-            WonderfulFarmLife.ModConfig = new PatchConfig().InitializeConfig(this.BaseConfigPath);
+            this.modPath = this.PathOnDisk;
+            this.ModConfig = new PatchConfig().InitializeConfig(this.BaseConfigPath);
             GameEvents.UpdateTick += this.Event_UpdateTick;
             LocationEvents.CurrentLocationChanged += this.Event_CurrentLocationChanged;
-            TimeEvents.DayOfMonthChanged += WonderfulFarmLife.Event_DayOfMonthChanged;
-            ControlEvents.MouseChanged += WonderfulFarmLife.Event_MouseChanged;
-            ControlEvents.ControllerButtonPressed += WonderfulFarmLife.Event_ControllerButtonPressed;
+            TimeEvents.DayOfMonthChanged += this.Event_DayOfMonthChanged;
+            ControlEvents.MouseChanged += this.Event_MouseChanged;
+            ControlEvents.ControllerButtonPressed += this.Event_ControllerButtonPressed;
         }
 
         private void Event_UpdateTick(object sender, EventArgs e)
@@ -57,51 +57,51 @@ namespace WonderfulFarmLife
                 if (clump.occupiesTile(71, 13) || clump.occupiesTile(72, 13) || clump.occupiesTile(71, 14) || clump.occupiesTile(72, 14))
                     resourceClumps.Remove(clump);
             }
-            if (WonderfulFarmLife.ModConfig.ShowFarmStand)
+            if (this.ModConfig.ShowFarmStand)
             {
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.FarmStandEdits(farm));
+                this.PatchMap(farm, this.FarmStandEdits(farm));
                 farm.setTileProperty(74, 15, "Buildings", "Action", "NewShippingBin");
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2058@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2083@Passable", new PropertyValue(true));
             }
-            if (WonderfulFarmLife.ModConfig.EditPath)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.PathEdits(farm));
-            if (WonderfulFarmLife.ModConfig.RemovePathAlltogether)
+            if (this.ModConfig.EditPath)
+                this.PatchMap(farm, this.PathEdits(farm));
+            if (this.ModConfig.RemovePathAlltogether)
             {
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.PathEdits(farm));
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.RemovePathEdits(farm));
+                this.PatchMap(farm, this.PathEdits(farm));
+                this.PatchMap(farm, this.RemovePathEdits(farm));
             }
-            if (WonderfulFarmLife.ModConfig.RemoveShippingBin)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.RemoveShippingBinEdits(farm));
-            if (WonderfulFarmLife.ModConfig.ShowPatio)
+            if (this.ModConfig.RemoveShippingBin)
+                this.PatchMap(farm, this.RemoveShippingBinEdits(farm));
+            if (this.ModConfig.ShowPatio)
             {
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.PatioEdits(farm));
+                this.PatchMap(farm, this.PatioEdits(farm));
                 farm.setTileProperty(68, 6, "Buildings", "Action", "kitchen");
                 farm.setTileProperty(69, 6, "Buildings", "Action", "kitchen");
             }
-            if (WonderfulFarmLife.ModConfig.ShowBinClutter)
+            if (this.ModConfig.ShowBinClutter)
             {
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.YardGardenEditsAndBinClutter(farm));
+                this.PatchMap(farm, this.YardGardenEditsAndBinClutter(farm));
                 farm.setTileProperty(75, 4, "Buildings", "Action", "Jukebox");
                 farm.setTileProperty(75, 5, "Buildings", "Action", "Jukebox");
             }
-            if (WonderfulFarmLife.ModConfig.AddDogHouse)
+            if (this.ModConfig.AddDogHouse)
             {
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.DogHouseEdits(farm));
+                this.PatchMap(farm, this.DogHouseEdits(farm));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2718@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2719@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2720@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2721@Passable", new PropertyValue(true));
             }
-            if (WonderfulFarmLife.ModConfig.AddGreenHouseArch)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.GreenHouseArchEdits(farm));
-            if (WonderfulFarmLife.ModConfig.ShowPicnicBlanket)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.PicnicBlanketEdits(farm));
-            if (WonderfulFarmLife.ModConfig.ShowPicnicTable)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.PicnicAreaTableEdits(farm));
-            if (WonderfulFarmLife.ModConfig.ShowTreeSwing)
+            if (this.ModConfig.AddGreenHouseArch)
+                this.PatchMap(farm, this.GreenHouseArchEdits(farm));
+            if (this.ModConfig.ShowPicnicBlanket)
+                this.PatchMap(farm, this.PicnicBlanketEdits(farm));
+            if (this.ModConfig.ShowPicnicTable)
+                this.PatchMap(farm, this.PicnicAreaTableEdits(farm));
+            if (this.ModConfig.ShowTreeSwing)
             {
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.TreeSwingEdits(farm));
+                this.PatchMap(farm, this.TreeSwingEdits(farm));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2944@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2969@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2941@Passable", new PropertyValue(true));
@@ -109,22 +109,22 @@ namespace WonderfulFarmLife
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2966@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2967@Passable", new PropertyValue(true));
             }
-            if (WonderfulFarmLife.ModConfig.AddStoneBridge)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.StoneBridgeEdits(farm));
-            if (WonderfulFarmLife.ModConfig.AddTelescopeArea)
+            if (this.ModConfig.AddStoneBridge)
+                this.PatchMap(farm, this.StoneBridgeEdits(farm));
+            if (this.ModConfig.AddTelescopeArea)
             {
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.TelescopeEdits(farm));
+                this.PatchMap(farm, this.TelescopeEdits(farm));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2619@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2620@Passable", new PropertyValue(true));
                 farm.map.GetTileSheet("untitled tile sheet").Properties.Add("@TileIndex@2621@Passable", new PropertyValue(true));
                 farm.setTileProperty(30, 2, "Buildings", "Action", "TelescopeMessage");
             }
-            if (WonderfulFarmLife.ModConfig.ShowMemorialArea)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.MemorialArea(farm));
-            if (WonderfulFarmLife.ModConfig.ShowMemorialAreaArch)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.MemorialAreaArch(farm));
-            if (WonderfulFarmLife.ModConfig.UsingTSE)
-                WonderfulFarmLife.PatchMap(farm, WonderfulFarmLife.TegoFixes(farm));
+            if (this.ModConfig.ShowMemorialArea)
+                this.PatchMap(farm, this.MemorialArea(farm));
+            if (this.ModConfig.ShowMemorialAreaArch)
+                this.PatchMap(farm, this.MemorialAreaArch(farm));
+            if (this.ModConfig.UsingTSE)
+                this.PatchMap(farm, this.TegoFixes(farm));
             GameEvents.UpdateTick -= this.Event_UpdateTick;
         }
 
@@ -140,8 +140,8 @@ namespace WonderfulFarmLife
             for (int key = 0; key < num; ++key)
                 spriteOverrides.Add(key, 1975 + key);
             if (targetTexture != null)
-                dictionary[tileSheet] = WonderfulFarmLife.PatchTexture(targetTexture, Game1.currentSeason + "_wonderful.png", spriteOverrides, 16, 16);
-            WonderfulFarmLife.farmSheetPatched = true;
+                dictionary[tileSheet] = this.PatchTexture(targetTexture, Game1.currentSeason + "_wonderful.png", spriteOverrides, 16, 16);
+            this.farmSheetPatched = true;
             GameEvents.SecondUpdateTick -= this.Event_SecondUpdateTick;
         }
 
@@ -154,7 +154,7 @@ namespace WonderfulFarmLife
 
             TileSheet tileSheet = farm.map.TileSheets[Tile.getTileSheetIndex("untitled tile sheet", farm.map.TileSheets)];
 
-            if (WonderfulFarmLife.ModConfig.RemoveShippingBin)
+            if (this.ModConfig.RemoveShippingBin)
                 typeof(Farm).GetField("shippingBinLid", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(farm, null);
             Dictionary<TileSheet, Texture2D> dictionary = (Dictionary<TileSheet, Texture2D>)typeof(XnaDisplayDevice).GetField("m_tileSheetTextures", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Game1.mapDisplayDevice as XnaDisplayDevice);
             Texture2D targetTexture = dictionary[tileSheet];
@@ -163,19 +163,19 @@ namespace WonderfulFarmLife
             for (int key = 0; key < num; ++key)
                 spriteOverrides.Add(key, 1975 + key);
             if (targetTexture != null)
-                dictionary[tileSheet] = WonderfulFarmLife.PatchTexture(targetTexture, Game1.currentSeason + "_wonderful.png", spriteOverrides, 16, 16);
-            if (!WonderfulFarmLife.farmSheetPatched)
+                dictionary[tileSheet] = this.PatchTexture(targetTexture, Game1.currentSeason + "_wonderful.png", spriteOverrides, 16, 16);
+            if (!this.farmSheetPatched)
                 GameEvents.SecondUpdateTick += this.Event_SecondUpdateTick;
         }
 
-        private static void Event_DayOfMonthChanged(object sender, EventArgs e)
+        private void Event_DayOfMonthChanged(object sender, EventArgs e)
         {
-            if (!WonderfulFarmLife.PetBowlFilled)
+            if (!this.PetBowlFilled)
                 return;
 
             Farm farm = Game1.getFarm();
 
-            List<Pet> pets = WonderfulFarmLife.findPets();
+            List<Pet> pets = this.findPets();
             if (pets == null)
                 return;
 
@@ -184,30 +184,30 @@ namespace WonderfulFarmLife
 
             farm.setMapTileIndex(52, 7, 2201, "Buildings");
             farm.setMapTileIndex(53, 7, 2202, "Buildings");
-            WonderfulFarmLife.PetBowlFilled = false;
+            this.PetBowlFilled = false;
         }
 
-        private static void Event_MouseChanged(object sender, EventArgsMouseStateChanged e)
+        private void Event_MouseChanged(object sender, EventArgsMouseStateChanged e)
         {
             if (Game1.hasLoadedGame)
                 return;
 
             if (e.NewState.RightButton == ButtonState.Pressed && e.PriorState.RightButton != ButtonState.Pressed)
-                WonderfulFarmLife.CheckForAction();
+                this.CheckForAction();
             if (e.NewState.LeftButton != ButtonState.Pressed || e.PriorState.LeftButton == ButtonState.Pressed)
                 return;
-            WonderfulFarmLife.ChangeTileOnClick();
-            WonderfulFarmLife.CheckForAction();
+            this.ChangeTileOnClick();
+            this.CheckForAction();
         }
 
-        private static void Event_ControllerButtonPressed(object sender, EventArgsControllerButtonPressed e)
+        private void Event_ControllerButtonPressed(object sender, EventArgsControllerButtonPressed e)
         {
             if (Game1.hasLoadedGame || e.ButtonPressed != Buttons.A)
                 return;
-            WonderfulFarmLife.CheckForAction();
+            this.CheckForAction();
         }
 
-        private static void ChangeTileOnClick()
+        private void ChangeTileOnClick()
         {
             if ((Game1.player.CurrentTool as WateringCan)?.WaterLeft > 0)
                 return;
@@ -221,11 +221,11 @@ namespace WonderfulFarmLife
             {
                 farm.setMapTileIndex(52, 7, 2204, "Buildings");
                 farm.setMapTileIndex(53, 7, 2205, "Buildings");
-                WonderfulFarmLife.PetBowlFilled = true;
+                this.PetBowlFilled = true;
             }
         }
 
-        private static void CheckForAction()
+        private void CheckForAction()
         {
             if (Game1.player.UsingTool || Game1.numberOfSelectedItems != -1 || Game1.activeClickableMenu != null)
                 return;
@@ -242,7 +242,7 @@ namespace WonderfulFarmLife
             {
                 if (propertyValue == "NewShippingBin")
                 {
-                    ItemGrabMenu itemGrabMenu = new ItemGrabMenu(null, true, false, Utility.highlightShippableObjects, WonderfulFarmLife.shipItem, "", null, true, true, false);
+                    ItemGrabMenu itemGrabMenu = new ItemGrabMenu(null, true, false, Utility.highlightShippableObjects, this.shipItem, "", null, true, true, false);
                     itemGrabMenu.initializeUpperRightCloseButton();
                     itemGrabMenu.setBackgroundTransparency(false);
                     itemGrabMenu.setDestroyItemOnClick(true);
@@ -276,7 +276,7 @@ namespace WonderfulFarmLife
             }
         }
 
-        private static void shipItem(Item i, Farmer who)
+        private void shipItem(Item i, Farmer who)
         {
             if (i == null)
                 return;
@@ -295,7 +295,7 @@ namespace WonderfulFarmLife
             }
         }
 
-        private static List<Pet> findPets()
+        private List<Pet> findPets()
         {
             if (!Game1.player.hasPet())
                 return null;
@@ -311,7 +311,7 @@ namespace WonderfulFarmLife
                 : null;
         }
 
-        private static List<Tile> PathEdits(GameLocation gl)
+        private List<Tile> PathEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -330,10 +330,10 @@ namespace WonderfulFarmLife
             new Tile(0, 74, 17, 227, tileSheetIndex),
             new Tile(0, 75, 17, 624, tileSheetIndex)
             };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> GreenHouseArchEdits(GameLocation gl)
+        private List<Tile> GreenHouseArchEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -390,10 +390,10 @@ namespace WonderfulFarmLife
             new Tile(1, 26, 16, 2777, tileSheetIndex),
             new Tile(1, 30, 16, 2781, tileSheetIndex)
             };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> TegoFixes(GameLocation gl)
+        private List<Tile> TegoFixes(GameLocation gl)
         {
             Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -411,10 +411,10 @@ namespace WonderfulFarmLife
             new Tile(3, 72, 5, -1),
             new Tile(3, 77, 5, -1)
             };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> RemoveShippingBinEdits(GameLocation gl)
+        private List<Tile> RemoveShippingBinEdits(GameLocation gl)
         {
             Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -424,10 +424,10 @@ namespace WonderfulFarmLife
         new Tile(1, 71, 14, -1),
         new Tile(1, 72, 14, -1)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> RemovePathEdits(GameLocation gl)
+        private List<Tile> RemovePathEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -438,10 +438,10 @@ namespace WonderfulFarmLife
         new Tile(0, 78, 17, 227, tileSheetIndex),
         new Tile(0, 79, 17, 227, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> TelescopeEdits(GameLocation gl)
+        private List<Tile> TelescopeEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -753,10 +753,10 @@ namespace WonderfulFarmLife
         new Tile(1, 33, 2, 21, tileSheetIndex),
         new Tile(1, 12, 2, 21, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> MemorialArea(GameLocation gl)
+        private List<Tile> MemorialArea(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1076,10 +1076,10 @@ namespace WonderfulFarmLife
         new Tile(1, 23, 16, 2446, tileSheetIndex),
         new Tile(1, 23, 17, 2471, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> MemorialAreaArch(GameLocation gl)
+        private List<Tile> MemorialAreaArch(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1101,10 +1101,10 @@ namespace WonderfulFarmLife
         new Tile(1, 15, 20, 2488, tileSheetIndex),
         new Tile(1, 18, 20, 2491, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> PicnicBlanketEdits(GameLocation gl)
+        private List<Tile> PicnicBlanketEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1134,10 +1134,10 @@ namespace WonderfulFarmLife
         new Tile(0, 37, 48, 3071, tileSheetIndex),
         new Tile(0, 38, 48, 3072, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> StoneBridgeEdits(GameLocation gl)
+        private List<Tile> StoneBridgeEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1242,10 +1242,10 @@ namespace WonderfulFarmLife
         new Tile(4, 38, 58, 3024, tileSheetIndex),
         new Tile(4, 38, 59, 3049, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> PicnicAreaTableEdits(GameLocation gl)
+        private List<Tile> PicnicAreaTableEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1256,10 +1256,10 @@ namespace WonderfulFarmLife
         new Tile(3, 36, 43, 2945, tileSheetIndex),
         new Tile(3, 37, 43, 2946, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> TreeSwingEdits(GameLocation gl)
+        private List<Tile> TreeSwingEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1302,10 +1302,10 @@ namespace WonderfulFarmLife
         new Tile(4, 35, 42, 2919, tileSheetIndex),
         new Tile(4, 36, 42, 2920, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> DogHouseEdits(GameLocation gl)
+        private List<Tile> DogHouseEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1357,10 +1357,10 @@ namespace WonderfulFarmLife
         new Tile(3, 54, 5, -1),
         new Tile(1, 50, 6, -1)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> YardGardenEditsAndBinClutter(GameLocation gl)
+        private List<Tile> YardGardenEditsAndBinClutter(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1503,10 +1503,10 @@ namespace WonderfulFarmLife
         new Tile(4, 76, 3, 2101, tileSheetIndex),
         new Tile(4, 78, 4, 2038, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> PatioEdits(GameLocation gl)
+        private List<Tile> PatioEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>
@@ -1836,10 +1836,10 @@ namespace WonderfulFarmLife
         new Tile(1, 70, 9, 2196, tileSheetIndex),
         new Tile(1, 71, 9, 2197, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static List<Tile> FarmStandEdits(GameLocation gl)
+        private List<Tile> FarmStandEdits(GameLocation gl)
         {
             int tileSheetIndex = Tile.getTileSheetIndex("untitled tile sheet", gl.map.TileSheets);
             List<Tile> tileArray = new List<Tile>()
@@ -1920,10 +1920,10 @@ namespace WonderfulFarmLife
         new Tile(1, 72, 16, 2153, tileSheetIndex),
         new Tile(1, 73, 16, 2154, tileSheetIndex)
       };
-            return WonderfulFarmLife.InitializeTileArray(gl, tileArray);
+            return this.InitializeTileArray(gl, tileArray);
         }
 
-        private static void PatchMap(GameLocation gl, List<Tile> tileArray)
+        private void PatchMap(GameLocation gl, List<Tile> tileArray)
         {
             try
             {
@@ -1958,7 +1958,7 @@ namespace WonderfulFarmLife
             }
         }
 
-        private static List<Tile> InitializeTileArray(GameLocation gl, List<Tile> tileArray)
+        private List<Tile> InitializeTileArray(GameLocation gl, List<Tile> tileArray)
         {
             foreach (Tile tile in tileArray)
             {
@@ -1974,9 +1974,9 @@ namespace WonderfulFarmLife
             return tileArray;
         }
 
-        public static Texture2D PatchTexture(Texture2D targetTexture, string overridingTexturePath, Dictionary<int, int> spriteOverrides, int gridWidth, int gridHeight)
+        public Texture2D PatchTexture(Texture2D targetTexture, string overridingTexturePath, Dictionary<int, int> spriteOverrides, int gridWidth, int gridHeight)
         {
-            int bottom = WonderfulFarmLife.GetSourceRect(spriteOverrides.Values.Max(), targetTexture, gridWidth, gridHeight).Bottom;
+            int bottom = this.GetSourceRect(spriteOverrides.Values.Max(), targetTexture, gridWidth, gridHeight).Bottom;
             if (bottom > targetTexture.Height)
             {
                 Color[] data1 = new Color[targetTexture.Width * targetTexture.Height];
@@ -1986,20 +1986,20 @@ namespace WonderfulFarmLife
                 targetTexture = new Texture2D(Game1.graphics.GraphicsDevice, targetTexture.Width, bottom);
                 targetTexture.SetData(data2);
             }
-            using (FileStream fileStream = new FileStream(Path.Combine(WonderfulFarmLife.modPath, "overrides\\" + overridingTexturePath), FileMode.Open))
+            using (FileStream fileStream = new FileStream(Path.Combine(this.modPath, "overrides\\" + overridingTexturePath), FileMode.Open))
             {
                 Texture2D texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, fileStream);
                 foreach (KeyValuePair<int, int> spriteOverride in spriteOverrides)
                 {
                     Color[] data = new Color[gridWidth * gridHeight];
-                    texture.GetData(0, WonderfulFarmLife.GetSourceRect(spriteOverride.Key, texture, gridWidth, gridHeight), data, 0, data.Length);
-                    targetTexture.SetData(0, WonderfulFarmLife.GetSourceRect(spriteOverride.Value, targetTexture, gridWidth, gridHeight), data, 0, data.Length);
+                    texture.GetData(0, this.GetSourceRect(spriteOverride.Key, texture, gridWidth, gridHeight), data, 0, data.Length);
+                    targetTexture.SetData(0, this.GetSourceRect(spriteOverride.Value, targetTexture, gridWidth, gridHeight), data, 0, data.Length);
                 }
             }
             return targetTexture;
         }
 
-        private static Rectangle GetSourceRect(int index, Texture2D texture, int gridWidth, int gridHeight)
+        private Rectangle GetSourceRect(int index, Texture2D texture, int gridWidth, int gridHeight)
         {
             return new Rectangle(index % (texture.Width / gridWidth) * gridWidth, index / (texture.Width / gridWidth) * gridHeight, gridWidth, gridHeight);
         }
