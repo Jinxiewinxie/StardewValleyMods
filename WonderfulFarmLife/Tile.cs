@@ -25,32 +25,34 @@ namespace WonderfulFarmLife
         /// <summary>The tile's index in the map's tile array.</summary>
         public readonly int TileIndex;
 
-        /// <summary>The tilesheet index which has the tile.</summary>
-        public int TileSheetIndex;
-
         /// <summary>The tilesheet name which has the tile.</summary>
-        public string TileSheet;
+        public readonly string Tilesheet;
 
 
         /*********
         ** Public methods
         *********/
-        /// <summary>Construct an instance.</summary>
+        /// <summary>Construct an instance for an empty tile.</summary>
+        /// <param name="layer">The tile layer in the tilesheet.</param>
+        /// <param name="x">The tile's X coordinate on the map.</param>
+        /// <param name="y">The tile's Y coordinate on the map.</param>
+        public Tile(TileLayer layer, int x, int y)
+            : this(layer, x, y, -1, null) { }
+
+        /// <summary>Construct an instance for a sprite tile.</summary>
         /// <param name="layer">The tile layer in the tilesheet.</param>
         /// <param name="x">The tile's X coordinate on the map.</param>
         /// <param name="y">The tile's Y coordinate on the map.</param>
         /// <param name="tileIndex">The tile's index in the map's tile array.</param>
-        /// <param name="tileSheetIndex">The tilesheet index which has the tile.</param>
-        /// <param name="tileSheet">The tilesheet name which has the tile.</param>
-        public Tile(TileLayer layer, int x, int y, int tileIndex, int tileSheetIndex = -1, string tileSheet = "")
+        /// <param name="tilesheet">The tilesheet name which has the tile.</param>
+        public Tile(TileLayer layer, int x, int y, int tileIndex, string tilesheet)
         {
             this.Layer = layer;
             this.LayerName = layer.ToString();
             this.X = x;
             this.Y = y;
             this.TileIndex = tileIndex;
-            this.TileSheetIndex = tileSheetIndex;
-            this.TileSheet = tileSheet;
+            this.Tilesheet = tilesheet;
         }
 
         /// <summary>Get a tilesheet index from its name.</summary>
@@ -64,16 +66,6 @@ namespace WonderfulFarmLife
                     return i;
             }
             return 0;
-        }
-
-        /// <summary>Get a tilesheet name from its index.</summary>
-        /// <param name="index">The tilesheet index.</param>
-        /// <param name="tileSheets">The current tilesheets.</param>
-        public static string GetTileSheetName(int index, ReadOnlyCollection<TileSheet> tileSheets)
-        {
-            return index < tileSheets.Count
-                ? tileSheets[index].Id
-                : tileSheets[0].Id;
         }
     }
 }

@@ -33,6 +33,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants\FarmTilesheet.cs" />
     <Compile Include="Constants\TileLayer.cs" />
     <Compile Include="ModConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
