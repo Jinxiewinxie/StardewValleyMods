@@ -140,18 +140,9 @@ namespace WonderfulFarmLife
             if (e.NewLocation != farm)
                 return;
 
-            TileSheet tileSheet = farm.map.GetTileSheet("untitled tile sheet");
-
             if (this.Config.RemoveShippingBin)
                 this.Helper.Reflection.GetPrivateField<TemporaryAnimatedSprite>(farm, "shippingBinLid").SetValue(null);
-            var dictionary = this.Helper.Reflection.GetPrivateValue<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures");
-            Texture2D targetTexture = dictionary[tileSheet];
-            int num = 1100;
-            Dictionary<int, int> spriteOverrides = new Dictionary<int, int>();
-            for (int key = 0; key < num; ++key)
-                spriteOverrides.Add(key, 1975 + key);
-            if (targetTexture != null)
-                dictionary[tileSheet] = this.PatchTexture(targetTexture, Game1.currentSeason + "_wonderful.png", spriteOverrides, 16, 16);
+
             if (!this.FarmSheetPatched)
                 GameEvents.SecondUpdateTick += this.Event_SecondUpdateTick;
         }
