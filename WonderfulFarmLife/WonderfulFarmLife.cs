@@ -42,9 +42,6 @@ namespace WonderfulFarmLife
         /// <summary>The default tilesheet for tile overrides that don't specify one.</summary>
         private string DefaultTilesheet;
 
-        /// <summary>Whether the map changes have already been applied.</summary>
-        private bool Applied;
-
 
         /*********
         ** Public methods
@@ -61,7 +58,7 @@ namespace WonderfulFarmLife
             this.DefaultTilesheet = this.LayoutConfig.Tilesheets["default"];
 
             // hook up events
-            GameEvents.UpdateTick += this.Event_UpdateTick;
+            SaveEvents.AfterLoad += this.ReceiveAfterLoad;
             LocationEvents.CurrentLocationChanged += this.Event_CurrentLocationChanged;
             TimeEvents.DayOfMonthChanged += this.Event_DayOfMonthChanged;
             ControlEvents.MouseChanged += this.Event_MouseChanged;
@@ -72,14 +69,11 @@ namespace WonderfulFarmLife
         /*********
         ** Private methods
         *********/
-        /// <summary>The event invoked when the game updates state.</summary>
+        /// <summary>The event invoked after the player loads a saved game.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void Event_UpdateTick(object sender, EventArgs e)
+        private void ReceiveAfterLoad(object sender, EventArgs e)
         {
-            if (!Game1.hasLoadedGame || this.Applied || !(Game1.currentLocation is Farm))
-                return;
-
             // get farm data
             Farm farm = Game1.getFarm();
             FarmType farmType = (FarmType)Game1.whichFarm;
@@ -88,7 +82,6 @@ namespace WonderfulFarmLife
             if (!this.LayoutConfig.Layouts.ContainsKey(farmType))
             {
                 this.Monitor.Log($"The {farmType} farm isn't supported by the mod.", LogLevel.Warn);
-                this.Applied = true;
                 return;
             }
             LayoutConfig[] layouts = this.LayoutConfig
@@ -121,8 +114,6 @@ namespace WonderfulFarmLife
                         farm.map.GetTileSheet(property.Tilesheet).Properties.Add(property.Key, new PropertyValue(property.Value));
                 }
             }
-
-            GameEvents.UpdateTick -= this.Event_UpdateTick;
         }
 
         private void Event_SecondUpdateTick(object sender, EventArgs e)
