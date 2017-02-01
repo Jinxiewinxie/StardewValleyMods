@@ -32,8 +32,6 @@ namespace WonderfulFarmLife
         *********/
         private bool PetBowlFilled;
 
-        private bool FarmSheetPatched;
-
         private ModConfig Config;
 
         /// <summary>The layout data.</summary>
@@ -59,7 +57,7 @@ namespace WonderfulFarmLife
 
             // hook up events
             SaveEvents.AfterLoad += this.ReceiveAfterLoad;
-            LocationEvents.CurrentLocationChanged += this.Event_CurrentLocationChanged;
+            LocationEvents.CurrentLocationChanged += this.ReceiveCurrentLocationChanged;
             TimeEvents.DayOfMonthChanged += this.Event_DayOfMonthChanged;
             ControlEvents.MouseChanged += this.Event_MouseChanged;
             ControlEvents.ControllerButtonPressed += this.Event_ControllerButtonPressed;
@@ -90,7 +88,7 @@ namespace WonderfulFarmLife
                 .ToArray();
 
             // resize tilesheet
-            TileSheet tileSheet = farm.map.GetTileSheet("untitled tile sheet");
+            TileSheet tileSheet = farm.map.GetTileSheet(FarmTilesheet.Outdoors);
             tileSheet.SheetSize = new Size(tileSheet.SheetSize.Width, tileSheet.SheetSize.Height + 44);
 
             // apply layouts
@@ -116,35 +114,29 @@ namespace WonderfulFarmLife
             }
         }
 
-        private void Event_SecondUpdateTick(object sender, EventArgs e)
+        /// <summary>The event invoked when the player loads a new map.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void ReceiveCurrentLocationChanged(object sender, EventArgsCurrentLocationChanged e)
         {
-            Farm farm = Game1.getFarm();
-
-            TileSheet tileSheet = farm.map.GetTileSheet("untitled tile sheet");
-            var dictionary = this.Helper.Reflection.GetPrivateValue<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures");
-            Texture2D targetTexture = dictionary[tileSheet];
-            int num = 1100;
-            Dictionary<int, int> spriteOverrides = new Dictionary<int, int>();
-            for (int key = 0; key < num; ++key)
-                spriteOverrides.Add(key, 1975 + key);
-            if (targetTexture != null)
-                dictionary[tileSheet] = this.PatchTexture(targetTexture, Game1.currentSeason + "_wonderful.png", spriteOverrides, 16, 16);
-            this.FarmSheetPatched = true;
-            GameEvents.SecondUpdateTick -= this.Event_SecondUpdateTick;
-        }
-
-        private void Event_CurrentLocationChanged(object sender, EventArgsCurrentLocationChanged e)
-        {
-            Farm farm = Game1.getFarm();
-
-            if (e.NewLocation != farm)
+            // get farm
+            Farm farm = e.NewLocation as Farm;
+            if (farm == null)
                 return;
 
+            // remove shipping bin sprite
             if (this.Config.RemoveShippingBin)
                 this.Helper.Reflection.GetPrivateField<TemporaryAnimatedSprite>(farm, "shippingBinLid").SetValue(null);
 
-            if (!this.FarmSheetPatched)
-                GameEvents.SecondUpdateTick += this.Event_SecondUpdateTick;
+            // patch tilesheet before draw
+            TileSheet tileSheet = farm.map.GetTileSheet(FarmTilesheet.Outdoors);
+            var sheetTextures = this.Helper.Reflection.GetPrivateValue<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures");
+            Texture2D targetTexture = sheetTextures[tileSheet];
+            Dictionary<int, int> spriteOverrides = new Dictionary<int, int>();
+            for (int key = 0; key < 1100; ++key)
+                spriteOverrides.Add(key, 1975 + key);
+            if (targetTexture != null)
+                sheetTextures[tileSheet] = this.PatchTexture(targetTexture, $"{Game1.currentSeason}_wonderful.png", spriteOverrides, 16, 16);
         }
 
         private void Event_DayOfMonthChanged(object sender, EventArgs e)
