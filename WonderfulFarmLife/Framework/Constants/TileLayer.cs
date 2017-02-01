@@ -1,4 +1,4 @@
-﻿namespace WonderfulFarmLife.Constants
+﻿namespace WonderfulFarmLife.Framework.Constants
 {
     /// <summary>A tile layer in tile sheets.</summary>
     internal enum TileLayer

@@ -1,4 +1,4 @@
-namespace WonderfulFarmLife.Constants
+namespace WonderfulFarmLife.Framework.Constants
 {
     /// <summary>A tilesheet in the farm map.</summary>
     internal static class FarmTilesheet
