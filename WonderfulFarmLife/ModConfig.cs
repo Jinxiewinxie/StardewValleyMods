@@ -1,7 +1,11 @@
 namespace WonderfulFarmLife
 {
+    /// <summary>The mod configuration model.</summary>
     public class ModConfig
     {
+        /*********
+        ** Accessors
+        *********/
         public bool EditPath { get; set; } = true;
 
         public bool RemovePathAlltogether { get; set; }

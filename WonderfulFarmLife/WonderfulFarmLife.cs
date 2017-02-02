@@ -30,11 +30,13 @@ namespace WonderfulFarmLife
         /*********
         ** Properties
         *********/
+        /// <summary>Whether the player filled the pet bowls today.</summary>
         private bool PetBowlsFilled;
 
+        /// <summary>The mod configuration.</summary>
         private ModConfig Config;
 
-        /// <summary>The layout data.</summary>
+        /// <summary>The map overrides to apply.</summary>
         private DataModel LayoutConfig;
 
         /// <summary>The default tilesheet for tile overrides that don't specify one.</summary>
@@ -163,24 +165,33 @@ namespace WonderfulFarmLife
             this.PetBowlsFilled = false;
         }
 
+        /// <summary>The event invoked when the player uses the mouse in some way.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private void Event_MouseChanged(object sender, EventArgsMouseStateChanged e)
         {
-            if (Game1.hasLoadedGame)
+            if (!Game1.hasLoadedGame)
                 return;
 
             if (e.NewState.RightButton == ButtonState.Pressed && e.PriorState.RightButton != ButtonState.Pressed)
-                this.CheckForAction();
-            if (e.NewState.LeftButton != ButtonState.Pressed || e.PriorState.LeftButton == ButtonState.Pressed)
-                return;
-            this.ChangeTileOnClick();
-            this.CheckForAction();
+                this.TryAction();
+            else if (e.NewState.LeftButton == ButtonState.Pressed && e.PriorState.LeftButton != ButtonState.Pressed)
+            {
+                this.TryFillPetBowls();
+                this.TryAction();
+            }
         }
 
+        /// <summary>The event invoked when the player presses a controller button.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private void Event_ControllerButtonPressed(object sender, EventArgsControllerButtonPressed e)
         {
-            if (Game1.hasLoadedGame || e.ButtonPressed != Buttons.A)
+            if (!Game1.hasLoadedGame)
                 return;
-            this.CheckForAction();
+
+            if (e.ButtonPressed == Buttons.A)
+                this.TryAction();
         }
 
 
@@ -209,17 +220,17 @@ namespace WonderfulFarmLife
             return (bool)property.GetValue(this.Config);
         }
 
-        private void ChangeTileOnClick()
+        /// <summary>Fill the pet bowls if the player is holding a filled watering can and the cursor is over a bowl.</summary>
+        private void TryFillPetBowls()
         {
-            if ((Game1.player.CurrentTool as WateringCan)?.WaterLeft > 0)
+            Farm farm = Game1.currentLocation as Farm;
+            if (farm == null || (Game1.player.CurrentTool as WateringCan)?.WaterLeft > 0)
                 return;
 
-            Farm farm = Game1.getFarm();
-
-            Vector2 vector2 = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y) / Game1.tileSize;
-            if (!Utility.tileWithinRadiusOfPlayer((int)vector2.X, (int)vector2.Y, 1, Game1.player))
-                vector2 = Game1.player.GetGrabTile();
-            if (farm.getTileIndexAt((int)vector2.X, (int)vector2.Y, "Buildings") == 2201 || farm.getTileIndexAt((int)vector2.X, (int)vector2.Y, "Buildings") == 2202)
+            // fill bowls if under cursor
+            Vector2 cursorPos = this.GetActionCursor();
+            int tileID = farm.getTileIndexAt((int)cursorPos.X, (int)cursorPos.Y, "Buildings");
+            if (tileID == 2201 || tileID == 2202)
             {
                 farm.setMapTileIndex(52, 7, 2204, "Buildings");
                 farm.setMapTileIndex(53, 7, 2205, "Buildings");
@@ -227,69 +238,89 @@ namespace WonderfulFarmLife
             }
         }
 
-        private void CheckForAction()
+        /// <summary>Get the tile under the cursor or grab tile.</summary>
+        private Vector2 GetActionCursor()
+        {
+            Vector2 cursorPos = Game1.currentCursorTile;
+            return Utility.tileWithinRadiusOfPlayer((int)cursorPos.X, (int)cursorPos.Y, 1, Game1.player)
+                ? cursorPos
+                : Game1.player.GetGrabTile();
+        }
+
+        /// <summary>Trigger the action for the tile under the cursor, if applicable.</summary>
+        private void TryAction()
         {
             if (Game1.player.UsingTool || Game1.numberOfSelectedItems != -1 || Game1.activeClickableMenu != null)
                 return;
 
+            // get tile undor cursor
+            Vector2 actionPos = this.GetActionCursor();
+            Tile actionTile = Game1.currentLocation.map.GetLayer("Buildings").Tiles[(int)actionPos.X, (int)actionPos.Y];
+            if (actionTile == null)
+                return;
 
-            Vector2 vector2 = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y) / Game1.tileSize;
-            if (!Utility.tileWithinRadiusOfPlayer((int)vector2.X, (int)vector2.Y, 1, Game1.player))
-                vector2 = Game1.player.GetGrabTile();
+            // get tile action
+            PropertyValue propertyValue;
+            actionTile.Properties.TryGetValue("Action", out propertyValue);
+            if (propertyValue == null)
+                return;
+            string action = propertyValue.ToString();
 
-            xTile.Tiles.Tile tile = Game1.currentLocation.map.GetLayer("Buildings").PickTile(new Location((int)vector2.X * Game1.tileSize, (int)vector2.Y * Game1.tileSize), Game1.viewport.Size);
-            PropertyValue propertyValue = null;
-            tile?.Properties.TryGetValue("Action", out propertyValue);
-            if (propertyValue != null)
+            // handle action
+            switch (action)
             {
-                if (propertyValue == "NewShippingBin")
-                {
-                    ItemGrabMenu itemGrabMenu = new ItemGrabMenu(null, true, false, Utility.highlightShippableObjects, this.shipItem, "", null, true, true, false);
-                    itemGrabMenu.initializeUpperRightCloseButton();
-                    itemGrabMenu.setBackgroundTransparency(false);
-                    itemGrabMenu.setDestroyItemOnClick(true);
-                    itemGrabMenu.initializeShippingBin();
-                    Game1.activeClickableMenu = itemGrabMenu;
-                    Game1.playSound("shwip");
-                    if (Game1.player.facingDirection == 1)
-                        Game1.player.Halt();
-                    Game1.player.showCarrying();
-                }
-                if (propertyValue == "TelescopeMessage")
-                {
-                    Random random = new Random();
-                    List<string> stringList = new List<string>
+                case "NewShippingBin":
                     {
-                        "I wish Neil DeGrasse Tyson was here.",
-                        "I call this star mine... and that one, oh, and that one too.",
-                        "Astronomy compels the soul to look upward, and leads us from this world to another.",
-                        "Be glad of life, because it gives you the chance to love and to work and to play and to look up at the stars.",
-                        "The sky is the ultimate art gallery just above us.",
-                        "'Stop acting so small. You are the universe in estatic motion.' - Rumi",
-                        "The universe doesn't give you what you ask for with your thoughts, it gives you what you demand with your actions.",
-                        "The darkest nights produce the brightest stars.",
-                        "'there wouldn't be a sky full of stars if we were all meant to wish on the same one.' - Frances Clark",
-                        "Stars can't shine without darkness.",
-                        "I have loved the stars too fondly to be fearful of the night.",
-                        "I know nothing with any certainty, but the sight of the stars makes me dream."
-                    };
-                    Game1.drawObjectDialogue(stringList[random.Next(stringList.Count)]);
-                }
+                        ItemGrabMenu itemGrabMenu = new ItemGrabMenu(null, true, false, Utility.highlightShippableObjects, this.ShipItem, "", null, true, true, false);
+                        itemGrabMenu.initializeUpperRightCloseButton();
+                        itemGrabMenu.setBackgroundTransparency(false);
+                        itemGrabMenu.setDestroyItemOnClick(true);
+                        itemGrabMenu.initializeShippingBin();
+                        Game1.activeClickableMenu = itemGrabMenu;
+                        Game1.playSound("shwip");
+                        if (Game1.player.facingDirection == 1)
+                            Game1.player.Halt();
+                        Game1.player.showCarrying();
+                    }
+                    break;
+
+                case "TelescopeMessage":
+                    {
+                        Random random = new Random();
+                        string[] messages = {
+                            "I wish Neil DeGrasse Tyson was here.",
+                            "I call this star mine... and that one, oh, and that one too.",
+                            "Astronomy compels the soul to look upward, and leads us from this world to another.",
+                            "Be glad of life, because it gives you the chance to love and to work and to play and to look up at the stars.",
+                            "The sky is the ultimate art gallery just above us.",
+                            "'Stop acting so small. You are the universe in estatic motion.' - Rumi",
+                            "The universe doesn't give you what you ask for with your thoughts, it gives you what you demand with your actions.",
+                            "The darkest nights produce the brightest stars.",
+                            "'there wouldn't be a sky full of stars if we were all meant to wish on the same one.' - Frances Clark",
+                            "Stars can't shine without darkness.",
+                            "I have loved the stars too fondly to be fearful of the night.",
+                            "I know nothing with any certainty, but the sight of the stars makes me dream."
+                        };
+                        Game1.drawObjectDialogue(messages[random.Next(messages.Length)]);
+                    }
+                    break;
             }
         }
 
-        private void shipItem(Item i, Farmer who)
+        /// <summary>Add an item to the shipping bin.</summary>
+        /// <param name="item">The item to ship.</param>
+        /// <param name="player">The player in whose inventory the item is stored.</param>
+        private void ShipItem(Item item, Farmer player)
         {
-            if (i == null)
+            if (item == null)
                 return;
 
             Farm farm = Game1.getFarm();
-
-            farm.shippingBin.Add(i);
-            if (i is Object)
+            farm.shippingBin.Add(item);
+            if (item is Object)
                 DelayedAction.playSoundAfterDelay("Ship", 0);
-            farm.lastItemShipped = i;
-            who.removeItemFromInventory(i);
+            farm.lastItemShipped = item;
+            player.removeItemFromInventory(item);
             if (Game1.player.ActiveObject == null)
             {
                 Game1.player.showNotCarrying();
@@ -348,18 +379,26 @@ namespace WonderfulFarmLife
             }
         }
 
+        /// <summary>Read a tilesheet from the <c>overrides</c> folder, and write any overridden sprites onto the given texture.</summary>
+        /// <param name="targetTexture">The texture to patch.</param>
+        /// <param name="overridingTexturePath">The filename within the <c>overrides</c> folder from which to read the tilesheet.</param>
+        /// <param name="spriteOverrides">The sprite indexes for new sprites.</param>
+        /// <param name="gridWidth">The width of a tile in the tilesheet.</param>
+        /// <param name="gridHeight">The height of each tile in the tilesheet.</param>
         private Texture2D PatchTexture(Texture2D targetTexture, string overridingTexturePath, Dictionary<int, int> spriteOverrides, int gridWidth, int gridHeight)
         {
             int bottom = this.GetSourceRect(spriteOverrides.Values.Max(), targetTexture, gridWidth, gridHeight).Bottom;
             if (bottom > targetTexture.Height)
             {
-                Color[] data1 = new Color[targetTexture.Width * targetTexture.Height];
-                targetTexture.GetData(data1);
-                Color[] data2 = new Color[targetTexture.Width * bottom];
-                Array.Copy(data1, data2, data1.Length);
+                Color[] targetPixels = new Color[targetTexture.Width * targetTexture.Height];
+                targetTexture.GetData(targetPixels);
+
+                Color[] newPixels = new Color[targetTexture.Width * bottom];
+                Array.Copy(targetPixels, newPixels, targetPixels.Length);
                 targetTexture = new Texture2D(Game1.graphics.GraphicsDevice, targetTexture.Width, bottom);
-                targetTexture.SetData(data2);
+                targetTexture.SetData(newPixels);
             }
+
             using (FileStream fileStream = File.Open(Path.Combine(this.Helper.DirectoryPath, "overrides", overridingTexturePath), FileMode.Open))
             {
                 Texture2D texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, fileStream);
@@ -373,6 +412,11 @@ namespace WonderfulFarmLife
             return targetTexture;
         }
 
+        /// <summary>Get a sprite area on the farm tilesheet.</summary>
+        /// <param name="index">The tile index in the tilesheet.</param>
+        /// <param name="texture">The sprite texture.</param>
+        /// <param name="gridWidth">The width of a tile in the tilesheet.</param>
+        /// <param name="gridHeight">The height of each tile in the tilesheet.</param>
         private Rectangle GetSourceRect(int index, Texture2D texture, int gridWidth, int gridHeight)
         {
             return new Rectangle(index % (texture.Width / gridWidth) * gridWidth, index / (texture.Width / gridWidth) * gridHeight, gridWidth, gridHeight);
