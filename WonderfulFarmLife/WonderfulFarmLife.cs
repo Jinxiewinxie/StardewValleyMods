@@ -69,10 +69,72 @@ namespace WonderfulFarmLife
         /*********
         ** Private methods
         *********/
+        /****
+        ** Events
+        ****/
         /// <summary>The event invoked after the player loads a saved game.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void ReceiveAfterLoad(object sender, EventArgs e)
+        {
+            this.ApplyMapOverrides();
+        }
+
+        /// <summary>The event invoked when the player loads a new map.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void ReceiveCurrentLocationChanged(object sender, EventArgsCurrentLocationChanged e)
+        {
+            // get farm
+            Farm farm = e.NewLocation as Farm;
+            if (farm == null)
+                return;
+
+            this.PrepareMapForRendering(farm);
+        }
+
+        /// <summary>The event invoked when the day starts.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void ReceiveDayOfMonthChanged(object sender, EventArgs e)
+        {
+            this.UpdatePetBowlsForNewDay();
+        }
+
+        /// <summary>The event invoked when the player uses the mouse in some way.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void Event_MouseChanged(object sender, EventArgsMouseStateChanged e)
+        {
+            if (!Game1.hasLoadedGame)
+                return;
+
+            if (e.NewState.RightButton == ButtonState.Pressed && e.PriorState.RightButton != ButtonState.Pressed)
+                this.TryAction();
+            else if (e.NewState.LeftButton == ButtonState.Pressed && e.PriorState.LeftButton != ButtonState.Pressed)
+            {
+                if (!this.TryFillPetBowls(Game1.getFarm(), this.GetActionCursor()))
+                    this.TryAction();
+            }
+        }
+
+        /// <summary>The event invoked when the player presses a controller button.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void Event_ControllerButtonPressed(object sender, EventArgsControllerButtonPressed e)
+        {
+            if (!Game1.hasLoadedGame)
+                return;
+
+            if (e.ButtonPressed == Buttons.A)
+                this.TryAction();
+        }
+
+        /****
+        ** Methods
+        ****/
+        /// <summary>Apply the map overrides.</summary>
+        private void ApplyMapOverrides()
         {
             // get farm data
             Farm farm = Game1.getFarm();
@@ -116,16 +178,10 @@ namespace WonderfulFarmLife
             }
         }
 
-        /// <summary>The event invoked when the player loads a new map.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void ReceiveCurrentLocationChanged(object sender, EventArgsCurrentLocationChanged e)
+        /// <summary>Prepare the farm map before it begins rendering.</summary>
+        /// <param name="farm">The farm map to prepare.</param>
+        private void PrepareMapForRendering(Farm farm)
         {
-            // get farm
-            Farm farm = e.NewLocation as Farm;
-            if (farm == null)
-                return;
-
             // remove shipping bin sprite
             if (this.Config.RemoveShippingBin)
                 this.Helper.Reflection.GetPrivateField<TemporaryAnimatedSprite>(farm, "shippingBinLid").SetValue(null);
@@ -141,10 +197,8 @@ namespace WonderfulFarmLife
                 sheetTextures[tileSheet] = this.PatchTexture(targetTexture, $"{Game1.currentSeason}_wonderful.png", spriteOverrides, 16, 16);
         }
 
-        /// <summary>The event invoked when the day starts.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void ReceiveDayOfMonthChanged(object sender, EventArgs e)
+        /// <summary>Apply the happiness bonus for filling pets' watering bowls, and reset the bowls.</summary>
+        private void UpdatePetBowlsForNewDay()
         {
             if (!this.PetBowlsFilled)
                 return;
@@ -154,7 +208,7 @@ namespace WonderfulFarmLife
             if (!pets.Any())
                 return;
 
-            // apply happiness bonus for watering pets
+            // apply happiness bonus
             foreach (Pet pet in pets)
                 pet.friendshipTowardFarmer = Math.Min(Pet.maxFriendship, pet.friendshipTowardFarmer + 6);
 
@@ -164,36 +218,6 @@ namespace WonderfulFarmLife
             farm.setMapTileIndex(53, 7, 2202, "Buildings");
             this.PetBowlsFilled = false;
         }
-
-        /// <summary>The event invoked when the player uses the mouse in some way.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void Event_MouseChanged(object sender, EventArgsMouseStateChanged e)
-        {
-            if (!Game1.hasLoadedGame)
-                return;
-
-            if (e.NewState.RightButton == ButtonState.Pressed && e.PriorState.RightButton != ButtonState.Pressed)
-                this.TryAction();
-            else if (e.NewState.LeftButton == ButtonState.Pressed && e.PriorState.LeftButton != ButtonState.Pressed)
-            {
-                this.TryFillPetBowls();
-                this.TryAction();
-            }
-        }
-
-        /// <summary>The event invoked when the player presses a controller button.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void Event_ControllerButtonPressed(object sender, EventArgsControllerButtonPressed e)
-        {
-            if (!Game1.hasLoadedGame)
-                return;
-
-            if (e.ButtonPressed == Buttons.A)
-                this.TryAction();
-        }
-
 
         /// <summary>Get the value of a config flag.</summary>
         /// <param name="name">The name of the config flag.</param>
@@ -220,24 +244,6 @@ namespace WonderfulFarmLife
             return (bool)property.GetValue(this.Config);
         }
 
-        /// <summary>Fill the pet bowls if the player is holding a filled watering can and the cursor is over a bowl.</summary>
-        private void TryFillPetBowls()
-        {
-            Farm farm = Game1.currentLocation as Farm;
-            if (farm == null || (Game1.player.CurrentTool as WateringCan)?.WaterLeft > 0)
-                return;
-
-            // fill bowls if under cursor
-            Vector2 cursorPos = this.GetActionCursor();
-            int tileID = farm.getTileIndexAt((int)cursorPos.X, (int)cursorPos.Y, "Buildings");
-            if (tileID == 2201 || tileID == 2202)
-            {
-                farm.setMapTileIndex(52, 7, 2204, "Buildings");
-                farm.setMapTileIndex(53, 7, 2205, "Buildings");
-                this.PetBowlsFilled = true;
-            }
-        }
-
         /// <summary>Get the tile under the cursor or grab tile.</summary>
         private Vector2 GetActionCursor()
         {
@@ -248,22 +254,22 @@ namespace WonderfulFarmLife
         }
 
         /// <summary>Trigger the action for the tile under the cursor, if applicable.</summary>
-        private void TryAction()
+        private bool TryAction()
         {
-            if (Game1.player.UsingTool || Game1.numberOfSelectedItems != -1 || Game1.activeClickableMenu != null)
-                return;
+            if (Game1.numberOfSelectedItems != -1 || Game1.activeClickableMenu != null)
+                return false;
 
             // get tile undor cursor
             Vector2 actionPos = this.GetActionCursor();
             Tile actionTile = Game1.currentLocation.map.GetLayer("Buildings").Tiles[(int)actionPos.X, (int)actionPos.Y];
             if (actionTile == null)
-                return;
+                return false;
 
             // get tile action
             PropertyValue propertyValue;
             actionTile.Properties.TryGetValue("Action", out propertyValue);
             if (propertyValue == null)
-                return;
+                return false;
             string action = propertyValue.ToString();
 
             // handle action
@@ -281,8 +287,8 @@ namespace WonderfulFarmLife
                         if (Game1.player.facingDirection == 1)
                             Game1.player.Halt();
                         Game1.player.showCarrying();
+                        return true;
                     }
-                    break;
 
                 case "TelescopeMessage":
                     {
@@ -302,9 +308,31 @@ namespace WonderfulFarmLife
                             "I know nothing with any certainty, but the sight of the stars makes me dream."
                         };
                         Game1.drawObjectDialogue(messages[random.Next(messages.Length)]);
+                        return true;
                     }
-                    break;
             }
+            return false;
+        }
+
+        /// <summary>Fill the pet bowls if the player is holding a filled watering can and the cursor is over a bowl.</summary>
+        /// <param name="farm">The current location.</param>
+        /// <param name="tile">The tile being interacted with.</param>
+        private bool TryFillPetBowls(Farm farm, Vector2 tile)
+        {
+            WateringCan wateringCan = Game1.player.CurrentTool as WateringCan;
+            if (wateringCan == null || wateringCan.WaterLeft <= 0)
+                return false;
+
+            // fill bowls if under cursor
+            int tileID = farm.getTileIndexAt((int)tile.X, (int)tile.Y, "Buildings");
+            if (tileID == 2201 || tileID == 2202)
+            {
+                farm.setMapTileIndex(52, 7, 2204, "Buildings");
+                farm.setMapTileIndex(53, 7, 2205, "Buildings");
+                this.PetBowlsFilled = true;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>Add an item to the shipping bin.</summary>
