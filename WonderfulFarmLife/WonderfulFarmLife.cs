@@ -128,6 +128,11 @@ namespace WonderfulFarmLife
 
             if (e.ButtonPressed == Buttons.A)
                 this.TryAction();
+            if (e.ButtonPressed == Buttons.X)
+            {
+                if (!this.TryFillPetBowls(Game1.getFarm(), this.GetActionCursor()))
+                    this.TryAction();
+            }
         }
 
         /****
