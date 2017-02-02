@@ -30,7 +30,7 @@ namespace WonderfulFarmLife
         /*********
         ** Properties
         *********/
-        private bool PetBowlFilled;
+        private bool PetBowlsFilled;
 
         private ModConfig Config;
 
@@ -58,7 +58,7 @@ namespace WonderfulFarmLife
             // hook up events
             SaveEvents.AfterLoad += this.ReceiveAfterLoad;
             LocationEvents.CurrentLocationChanged += this.ReceiveCurrentLocationChanged;
-            TimeEvents.DayOfMonthChanged += this.Event_DayOfMonthChanged;
+            TimeEvents.DayOfMonthChanged += this.ReceiveDayOfMonthChanged;
             ControlEvents.MouseChanged += this.Event_MouseChanged;
             ControlEvents.ControllerButtonPressed += this.Event_ControllerButtonPressed;
         }
@@ -139,23 +139,28 @@ namespace WonderfulFarmLife
                 sheetTextures[tileSheet] = this.PatchTexture(targetTexture, $"{Game1.currentSeason}_wonderful.png", spriteOverrides, 16, 16);
         }
 
-        private void Event_DayOfMonthChanged(object sender, EventArgs e)
+        /// <summary>The event invoked when the day starts.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void ReceiveDayOfMonthChanged(object sender, EventArgs e)
         {
-            if (!this.PetBowlFilled)
+            if (!this.PetBowlsFilled)
                 return;
 
-            Farm farm = Game1.getFarm();
-
-            List<Pet> pets = this.findPets();
-            if (pets == null)
+            // get pets
+            Pet[] pets = this.GetPets().ToArray();
+            if (!pets.Any())
                 return;
 
+            // apply happiness bonus for watering pets
             foreach (Pet pet in pets)
-                pet.friendshipTowardFarmer = Math.Min(1000, pet.friendshipTowardFarmer + 6);
+                pet.friendshipTowardFarmer = Math.Min(Pet.maxFriendship, pet.friendshipTowardFarmer + 6);
 
+            // empty bowls
+            Farm farm = Game1.getFarm();
             farm.setMapTileIndex(52, 7, 2201, "Buildings");
             farm.setMapTileIndex(53, 7, 2202, "Buildings");
-            this.PetBowlFilled = false;
+            this.PetBowlsFilled = false;
         }
 
         private void Event_MouseChanged(object sender, EventArgsMouseStateChanged e)
@@ -218,7 +223,7 @@ namespace WonderfulFarmLife
             {
                 farm.setMapTileIndex(52, 7, 2204, "Buildings");
                 farm.setMapTileIndex(53, 7, 2205, "Buildings");
-                this.PetBowlFilled = true;
+                this.PetBowlsFilled = true;
             }
         }
 
@@ -292,51 +297,16 @@ namespace WonderfulFarmLife
             }
         }
 
-        private List<Pet> findPets()
+        /// <summary>Get all known pets.</summary>
+        private IEnumerable<Pet> GetPets()
         {
             if (!Game1.player.hasPet())
                 return null;
 
-            List<Pet> pets =
-                Game1.getFarm().characters.OfType<Pet>()
-                .Concat(Utility.getHomeOfFarmer(Game1.player).characters.OfType<Pet>())
-                .ToList();
-
-            return pets.Any()
-                ? pets
-                : null;
-        }
-
-        /// <summary>Clear tiles from the map, which removes the tile, tile properties, and spawned objects on all layers (e.g. before placing custom tiles).</summary>
-        /// <param name="location">The game location to patch.</param>
-        /// <param name="areas">The tile areas to clear.</param>
-        private void Clear(Farm location, IEnumerable<Rectangle> areas)
-        {
-            foreach (Rectangle area in areas)
-            {
-                // clear tiles
-                foreach (Layer layer in location.map.Layers)
-                {
-                    for (int x = area.X; x <= area.Right; x++)
-                    {
-                        for (int y = area.Y; y <= area.Bottom; y++)
-                        {
-                            location.removeTile(x, y, layer.Id);
-                            location.waterTiles[x, y] = false;
-                        }
-                    }
-                }
-
-                // clear spawned objects
-                foreach (Vector2 tile in location.terrainFeatures.Keys)
-                {
-                    if (area.Contains((int)tile.X, (int)tile.Y))
-                        location.terrainFeatures.Remove(tile);
-                }
-                location.largeTerrainFeatures.RemoveAll(feature => area.Contains((int)feature.tilePosition.X, (int)feature.tilePosition.Y));
-                location.resourceClumps.RemoveAll(clump => area.Intersects(clump.getBoundingBox(clump.tile)));
-
-            }
+            return
+                Game1.getFarm().characters
+                .Concat(Utility.getHomeOfFarmer(Game1.player).characters)
+                .OfType<Pet>();
         }
 
         /// <summary>Apply tile overrides to the map.</summary>
