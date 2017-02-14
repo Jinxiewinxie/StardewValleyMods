@@ -1,24 +1,21 @@
-using StardewModdingAPI;
-
 namespace TaintedCellar
 {
-    public class CellarConfig : Config
+    /// <summary>The mod configuration.</summary>
+    public class CellarConfig
     {
-        public bool onlyUnlockAfterFinalHouseUpgrade { get; set; }
+        /*********
+        ** Accessors
+        *********/
+        /// <summary>Only unlock the underground cellar after the house is fully upgraded.</summary>
+        public bool OnlyUnlockAfterFinalHouseUpgrade { get; set; }
 
-        public bool flipCellarEntrance { get; set; }
+        /// <summary>Show the cellar entrance on the right side of the house instead of the left.</summary>
+        public bool FlipCellarEntrance { get; set; }
 
-        public int xPositionOffset { get; set; }
+        /// <summary>An X offset applied to the entrance position.</summary>
+        public int XPositionOffset { get; set; }
 
-        public int yPositionOffset { get; set; }
-
-        public virtual T GenerateDefaultConfig<T>() where T : Config
-        {
-            this.onlyUnlockAfterFinalHouseUpgrade = false;
-            this.flipCellarEntrance = false;
-            this.xPositionOffset = 0;
-            this.yPositionOffset = 0;
-            return this as T;
-        }
+        /// <summary>A Y offset applied to the entrance position.</summary>
+        public int YPositionOffset { get; set; }
     }
 }

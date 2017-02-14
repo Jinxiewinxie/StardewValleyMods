@@ -1,14 +1,14 @@
 ﻿{
   "Name": "TaintedCellar",
-  "Authour": "Jinxiewinxie for TaintedWheat",
+  "Author": "Jinxiewinxie for TaintedWheat",
   "Version": {
-    "MajorVersion": 0,
-    "MinorVersion": 0,
+    "MajorVersion": 1,
+    "MinorVersion": 1,
     "PatchVersion": 0,
-    "Build": ""
+    "Build": null
   },
-  "Description": "Description",
-  "UniqueID": "",
-  "PerSaveConfigs": false,
+  "MinimumApiVersion": "1.8", 
+  "Description": "Adds an underground cellar, complete with amenities only found in bomb shelters owned by paranoid survivalists or Cold War homeowners!",
+  "UniqueID": "TaintedCellar",
   "EntryDll": "TaintedCellar.dll"
 }

@@ -1,51 +1,43 @@
-﻿using System.Collections.ObjectModel;
-using StardewModdingAPI;
-using xTile.Tiles;
-
-namespace TaintedCellar
+﻿namespace TaintedCellar
 {
+    /// <summary>Defines an override to apply to a tile position.</summary>
     public class Tile
     {
-        public int TileSheet;
+        /*********
+        ** Accessors
+        *********/
+        /// <summary>The tilesheet ID to modify.</summary>
+        public string Tilesheet;
+
+        /// <summary>The layer index to modify.</summary>
         public int LayerIndex;
+
+        /// <summary>The X tile coordinate.</summary>
         public int X;
+
+        /// <summary>The X tile coordinate.</summary>
         public int Y;
+
+        /// <summary>The tile ID in the tilesheet.</summary>
         public int TileIndex;
-        public string LayerName;
 
-        public Tile(int layerIndex, int x, int y, int tileIndex)
+
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        /// <param name="layerIndex">The layer index to modify.</param>
+        /// <param name="x">The X tile coordinate.</param>
+        /// <param name="y">The X tile coordinate.</param>
+        /// <param name="tileIndex">The tilesheet ID to modify.</param>
+        /// <param name="tilesheet">The tilesheet to modify.</param>
+        public Tile(int layerIndex, int x, int y, int tileIndex, string tilesheet)
         {
             this.LayerIndex = layerIndex;
             this.X = x;
             this.Y = y;
             this.TileIndex = tileIndex;
-        }
-
-        public Tile(int layerIndex, int x, int y, int tileIndex, int tileSheet)
-        {
-            this.LayerIndex = layerIndex;
-            this.X = x;
-            this.Y = y;
-            this.TileIndex = tileIndex;
-            this.TileSheet = tileSheet;
-        }
-
-        public static int GetTileSheetIndex(string tileSheetName, ReadOnlyCollection<TileSheet> tileSheets)
-        {
-            for (int index = 0; index < tileSheets.Count; ++index)
-            {
-                if (tileSheets[index].Id.Equals(tileSheetName))
-                    return index;
-            }
-            return 0;
-        }
-
-        public static string GetTileSheetName(int tileSheetIndex, ReadOnlyCollection<TileSheet> tileSheets)
-        {
-            if (tileSheetIndex < tileSheets.Count)
-                return tileSheets[tileSheetIndex].Id;
-            Log.Error("tileSheetIndex out of range");
-            return "";
+            this.Tilesheet = tilesheet;
         }
     }
 }

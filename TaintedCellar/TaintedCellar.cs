@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -9,68 +8,100 @@ using StardewValley;
 using StardewValley.TerrainFeatures;
 using xTile;
 using xTile.Dimensions;
+using xTile.Layers;
 using xTile.ObjectModel;
 using xTile.Tiles;
 
 namespace TaintedCellar
 {
+    /// <summary>The main entry class called by SMAPI.</summary>
     public class TaintedCellar : Mod
     {
-        private static string ModPath = "";
+        /*********
+        ** Properties
+        *********/
+        /// <summary>The mod configuration.</summary>
+        private CellarConfig Config;
 
-        public static CellarConfig ModConfig { get; private set; }
 
-        public virtual void Entry(params object[] objects)
+        /*********
+        ** Properties
+        *********/
+        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
+        public override void Entry(IModHelper helper)
         {
-            TaintedCellar.ModPath = this.PathOnDisk;
-            ModConfig = new CellarConfig().InitializeConfig(this.BaseConfigPath);
-            GameEvents.UpdateTick += TaintedCellar.Event_UpdateTick;
-            LocationEvents.CurrentLocationChanged += TaintedCellar.Event_CurrentLocationChanged;
+            this.Config = helper.ReadConfig<CellarConfig>();
+
+            SaveEvents.AfterLoad += this.OnAfterLoad;
+            LocationEvents.CurrentLocationChanged += this.OnCurrentLocationChanged;
         }
 
-        private static void Event_UpdateTick(object sender, EventArgs e)
+        /*********
+        ** Private methods
+        *********/
+        /****
+        ** Events
+        ****/
+        /// <summary>The method called after the player loads the world.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnAfterLoad(object sender, EventArgs e)
         {
-            if (Game1.locations.Count < 47)
-                return;
-            if (Game1.getLocationFromName("TaintedCellarMap") != null)
-                GameEvents.UpdateTick -= TaintedCellar.Event_UpdateTick;
-            else
-            {
-                GameLocation gameLocation = new GameLocation(TaintedCellar.LoadMap(Path.Combine(TaintedCellar.ModPath, "TaintedCellarMap.xnb")), "TaintedCellarMap");
-                gameLocation.map.GetTileSheet("Ztainted_cellar").ImageSource = "..\\mods\\TaintedCellar\\Ztainted_cellar";
-                gameLocation.map.LoadTileSheets(Game1.mapDisplayDevice);
-                gameLocation.isOutdoors = false;
-                gameLocation.isFarm = true;
-                Game1.locations.Add(gameLocation);
-                int entranceX = (TaintedCellar.ModConfig.flipCellarEntrance ? 69 : 57) + TaintedCellar.ModConfig.xPositionOffset;
-                int entranceY = 12 + TaintedCellar.ModConfig.yPositionOffset;
-                gameLocation.setTileProperty(3, 3, "Buildings", "Action", $"Warp {entranceX} {entranceY} Farm");
-                GameEvents.UpdateTick -= TaintedCellar.Event_UpdateTick;
-            }
+            this.AddLocation();
         }
 
-        private static void Event_CurrentLocationChanged(object sender, EventArgsCurrentLocationChanged e)
+        /// <summary>The method called when the player enters a new area.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnCurrentLocationChanged(object sender, EventArgsCurrentLocationChanged e)
         {
-            if (TaintedCellar.ModConfig.onlyUnlockAfterFinalHouseUpgrade && Game1.player.HouseUpgradeLevel != 2 || e.NewLocation != Game1.getFarm())
+            if (this.Config.OnlyUnlockAfterFinalHouseUpgrade && Game1.player.HouseUpgradeLevel < 3 || e.NewLocation != Game1.getFarm())
                 return;
-            Farm farm = Game1.getFarm();
+
+            this.PatchMap(Game1.getFarm());
+            LocationEvents.CurrentLocationChanged -= this.OnCurrentLocationChanged;
+        }
+
+
+        /****
+        ** Methods
+        ****/
+        /// <summary>Add the cellar location to the world.</summary>
+        private void AddLocation()
+        {
+            GameLocation location = new GameLocation(this.LoadMap(Path.Combine(Helper.DirectoryPath, "TaintedCellarMap.xnb")), "TaintedCellarMap");
+            location.map.GetTileSheet("Ztainted_cellar").ImageSource = "..\\mods\\TaintedCellar\\Ztainted_cellar";
+            location.map.LoadTileSheets(Game1.mapDisplayDevice);
+            location.isOutdoors = false;
+            location.isFarm = true;
+            Game1.locations.Add(location);
+
+            int entranceX = (this.Config.FlipCellarEntrance ? 69 : 57) + this.Config.XPositionOffset;
+            int entranceY = 12 + this.Config.YPositionOffset;
+            location.setTileProperty(3, 3, "Buildings", "Action", $"Warp {entranceX} {entranceY} Farm");
+        }
+
+        /// <summary>Patch the farm map to </summary>
+        private void PatchMap(Farm farm)
+        {
             farm.map.AddTileSheet(new TileSheet("Zpaths_objects_cellar", farm.map, "..\\mods\\TaintedCellar\\Zpaths_objects_cellar", new Size(32, 68), new Size(16, 16)));
             farm.map.LoadTileSheets(Game1.mapDisplayDevice);
-            if (TaintedCellar.ModConfig.flipCellarEntrance)
+            if (this.Config.FlipCellarEntrance)
             {
-                TaintedCellar.PatchMap(farm, TaintedCellar.CellarRightSideEdits(farm));
-                int entranceX = 68 + TaintedCellar.ModConfig.xPositionOffset;
-                int entranceY1 = 11 + TaintedCellar.ModConfig.yPositionOffset;
-                int entranceY2 = 12 + TaintedCellar.ModConfig.yPositionOffset;
+                this.PatchMap(farm, this.GetCellarRightSideEdits());
+                int entranceX = 68 + this.Config.XPositionOffset;
+                int entranceY1 = 11 + this.Config.YPositionOffset;
+                int entranceY2 = 12 + this.Config.YPositionOffset;
                 farm.setTileProperty(entranceX, entranceY1, "Buildings", "Action", "Warp 3 4 TaintedCellarMap");
                 farm.setTileProperty(entranceX, entranceY2, "Buildings", "Action", "Warp 3 4 TaintedCellarMap");
             }
             else
             {
-                TaintedCellar.PatchMap(farm, TaintedCellar.CellarLeftSideEdits(farm));
-                int entranceX = 58 + TaintedCellar.ModConfig.xPositionOffset;
-                int entranceY1 = 11 + TaintedCellar.ModConfig.yPositionOffset;
-                int entranceY2 = 12 + TaintedCellar.ModConfig.yPositionOffset;
+                this.PatchMap(farm, this.GetCellarLeftSideEdits());
+                int entranceX = 58 + this.Config.XPositionOffset;
+                int entranceY1 = 11 + this.Config.YPositionOffset;
+                int entranceY2 = 12 + this.Config.YPositionOffset;
                 farm.setTileProperty(entranceX, entranceY1, "Buildings", "Action", "Warp 3 4 TaintedCellarMap");
                 farm.setTileProperty(entranceX, entranceY2, "Buildings", "Action", "Warp 3 4 TaintedCellarMap");
             }
@@ -80,69 +111,80 @@ namespace TaintedCellar
             var properties = farm.map.GetTileSheet("Zpaths_objects_cellar").Properties;
             foreach (int tileID in new[] { 1865, 1897, 1866, 1898 })
                 properties.Add($"@TileIndex@{tileID}@Passable", new PropertyValue(true));
-
-            LocationEvents.CurrentLocationChanged -= TaintedCellar.Event_CurrentLocationChanged;
         }
 
-        private static Map LoadMap(string filePath)
+        /// <summary>Load a map from an XNB file.</summary>
+        /// <param name="filePath">The absolute file path.</param>
+        private Map LoadMap(string filePath)
         {
-            Map map = new ContentManager(new GameServiceContainer(), Path.GetDirectoryName(filePath)).Load<Map>(Path.GetFileNameWithoutExtension(filePath));
+            var contentManager = new ContentManager(new GameServiceContainer(), Path.GetDirectoryName(filePath));
+            Map map = contentManager.Load<Map>(Path.GetFileNameWithoutExtension(filePath));
             if (map == null)
-                throw new FileLoadException();
+                throw new FileLoadException("Could not load the map file.");
             return map;
         }
 
-        private static List<Tile> CellarRightSideEdits(GameLocation gl)
+        /// <summary>Get the tiles to change for the right-side cellar entrance.</summary>
+        private Tile[] GetCellarRightSideEdits()
         {
-            int tileSheetIndex = Tile.GetTileSheetIndex("Zpaths_objects_cellar", gl.map.TileSheets);
-            int x1 = 68 + TaintedCellar.ModConfig.xPositionOffset;
-            int x2 = 69 + TaintedCellar.ModConfig.xPositionOffset;
-            int y1 = 11 + TaintedCellar.ModConfig.yPositionOffset;
-            int y2 = 12 + TaintedCellar.ModConfig.yPositionOffset;
-            return new List<Tile>
+            string tilesheet = "Zpaths_objects_cellar";
+            int x1 = 68 + this.Config.XPositionOffset;
+            int x2 = 69 + this.Config.XPositionOffset;
+            int y1 = 11 + this.Config.YPositionOffset;
+            int y2 = 12 + this.Config.YPositionOffset;
+            return new[]
             {
-                new Tile(1, x1, y1, 1864, tileSheetIndex),
-                new Tile(1, x2, y1, 1865, tileSheetIndex),
-                new Tile(1, x1, y2, 1896, tileSheetIndex),
-                new Tile(1, x2, y2, 1897, tileSheetIndex)
+                new Tile(1, x1, y1, 1864, tilesheet),
+                new Tile(1, x2, y1, 1865, tilesheet),
+                new Tile(1, x1, y2, 1896, tilesheet),
+                new Tile(1, x2, y2, 1897, tilesheet)
             };
         }
 
-        private static List<Tile> CellarLeftSideEdits(GameLocation gl)
+        /// <summary>Get the tiles to change for the right-side cellar entrance.</summary>
+        private Tile[] GetCellarLeftSideEdits()
         {
-            int tileSheetIndex = Tile.GetTileSheetIndex("Zpaths_objects_cellar", gl.map.TileSheets);
-            int x1 = 57 + TaintedCellar.ModConfig.xPositionOffset;
-            int x2 = 58 + TaintedCellar.ModConfig.xPositionOffset;
-            int y1 = 11 + TaintedCellar.ModConfig.yPositionOffset;
-            int y2 = 12 + TaintedCellar.ModConfig.yPositionOffset;
-            return new List<Tile>()
-      {
-        new Tile(1, x1, y1, 1866, tileSheetIndex),
-        new Tile(1, x2, y1, 1867, tileSheetIndex),
-        new Tile(1, x1, y2, 1898, tileSheetIndex),
-        new Tile(1, x2, y2, 1899, tileSheetIndex)
-      };
+            string tilesheet = "Zpaths_objects_cellar";
+            int x1 = 57 + this.Config.XPositionOffset;
+            int x2 = 58 + this.Config.XPositionOffset;
+            int y1 = 11 + this.Config.YPositionOffset;
+            int y2 = 12 + this.Config.YPositionOffset;
+            return new[]
+            {
+                new Tile(1, x1, y1, 1866, tilesheet),
+                new Tile(1, x2, y1, 1867, tilesheet),
+                new Tile(1, x1, y2, 1898, tilesheet),
+                new Tile(1, x2, y2, 1899, tilesheet)
+            };
         }
 
-        private static void PatchMap(GameLocation gl, List<Tile> tileArray)
+        /// <summary>Apply a set of map overrides to the farm map.</summary>
+        /// <param name="farm">The farm to patch.</param>
+        /// <param name="tiles">The tile overrides to apply.</param>
+        private void PatchMap(Farm farm, Tile[] tiles)
         {
-            foreach (Tile tile in tileArray)
+            foreach (Tile tile in tiles)
             {
                 if (tile.TileIndex < 0)
                 {
-                    gl.removeTile(tile.X, tile.Y, gl.map.Layers[tile.LayerIndex].Id);
-                    gl.waterTiles[tile.X, tile.Y] = false;
+                    farm.removeTile(tile.X, tile.Y, farm.map.Layers[tile.LayerIndex].Id);
+                    farm.waterTiles[tile.X, tile.Y] = false;
 
-                    foreach (LargeTerrainFeature feature in gl.largeTerrainFeatures)
+                    foreach (LargeTerrainFeature feature in farm.largeTerrainFeatures)
                     {
                         if (feature.tilePosition.X == tile.X && feature.tilePosition.Y == tile.Y)
-                            gl.largeTerrainFeatures.Remove(feature);
+                            farm.largeTerrainFeatures.Remove(feature);
                     }
                 }
-                else if (gl.map.Layers[tile.LayerIndex].Tiles[tile.X, tile.Y] == null || (gl.map.Layers[tile.LayerIndex].Tiles[tile.X, tile.Y].TileSheet).Id != Tile.GetTileSheetName(tile.TileSheet, gl.map.TileSheets))
-                    gl.map.Layers[tile.LayerIndex].Tiles[tile.X, tile.Y] = new StaticTile(gl.map.Layers[tile.LayerIndex], gl.map.TileSheets[tile.TileSheet], 0, tile.TileIndex);
                 else
-                    gl.setMapTileIndex(tile.X, tile.Y, tile.TileIndex, gl.map.Layers[tile.LayerIndex].Id);
+                {
+                    Layer layer = farm.map.Layers[tile.LayerIndex];
+                    xTile.Tiles.Tile mapTile = layer.Tiles[tile.X, tile.Y];
+                    if (mapTile == null || mapTile.TileSheet.Id != tile.Tilesheet)
+                        layer.Tiles[tile.X, tile.Y] = new StaticTile(layer, farm.map.GetTileSheet(tile.Tilesheet), 0, tile.TileIndex);
+                    else
+                        farm.setMapTileIndex(tile.X, tile.Y, tile.TileIndex, layer.Id);
+                }
             }
         }
     }
