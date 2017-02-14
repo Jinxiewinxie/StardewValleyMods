@@ -19,7 +19,7 @@ namespace TaintedCellar
     {
         private static string modPath = "";
 
-        public static TaintedCellar.TaintedCellar.CellarConfig ModConfig { get; private set; }
+        public static CellarConfig ModConfig { get; private set; }
 
         public TaintedCellar()
         {
@@ -29,7 +29,7 @@ namespace TaintedCellar
         public virtual void Entry(params object[] objects)
         {
             TaintedCellar.TaintedCellar.modPath = this.get_PathOnDisk();
-            TaintedCellar.TaintedCellar.ModConfig = (TaintedCellar.TaintedCellar.CellarConfig)ConfigExtensions.InitializeConfig<TaintedCellar.TaintedCellar.CellarConfig>((M0)new TaintedCellar.TaintedCellar.CellarConfig(), this.get_BaseConfigPath());
+            TaintedCellar.TaintedCellar.ModConfig = (CellarConfig)ConfigExtensions.InitializeConfig<CellarConfig>((M0)new CellarConfig(), this.get_BaseConfigPath());
             GameEvents.add_UpdateTick(new EventHandler(TaintedCellar.TaintedCellar.Event_UpdateTick));
             LocationEvents.add_CurrentLocationChanged(new EventHandler<EventArgsCurrentLocationChanged>(TaintedCellar.TaintedCellar.Event_CurrentLocationChanged));
         }
@@ -165,31 +165,6 @@ namespace TaintedCellar
                     ((Map)gl.map).get_Layers()[tile.l].get_Tiles().set_Item(tile.x, tile.y, (Tile)new StaticTile(((Map)gl.map).get_Layers()[tile.l], ((Map)gl.map).get_TileSheets()[tile.tileSheet], (BlendMode)0, tile.tileIndex));
                 else
                     gl.setMapTileIndex(tile.x, tile.y, tile.tileIndex, ((Component)((Map)gl.map).get_Layers()[tile.l]).get_Id());
-            }
-        }
-
-        public class CellarConfig : Config
-        {
-            public bool onlyUnlockAfterFinalHouseUpgrade { get; set; }
-
-            public bool flipCellarEntrance { get; set; }
-
-            public int xPositionOffset { get; set; }
-
-            public int yPositionOffset { get; set; }
-
-            public CellarConfig()
-            {
-                base.\u002Ector();
-            }
-
-            public virtual T GenerateDefaultConfig<T>() where T : Config
-            {
-                this.onlyUnlockAfterFinalHouseUpgrade = false;
-                this.flipCellarEntrance = false;
-                this.xPositionOffset = 0;
-                this.yPositionOffset = 0;
-                return this as T;
             }
         }
     }

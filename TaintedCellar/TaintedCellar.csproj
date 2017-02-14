@@ -33,6 +33,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CellarConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaintedCellar.cs" />
     <Compile Include="Tile.cs" />
