@@ -1,51 +1,50 @@
-﻿using StardewModdingAPI;
-using System.Collections.ObjectModel;
-using xTile.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using StardewModdingAPI;
 using xTile.Tiles;
 
 namespace TaintedCellar
 {
     public class Tile
     {
-        public int tileSheet = 0;
-        public int l;
-        public int x;
-        public int y;
-        public int tileIndex;
-        public string layer;
+        public int TileSheet;
+        public int LayerIndex;
+        public int X;
+        public int Y;
+        public int TileIndex;
+        public string LayerName;
 
-        public Tile(int l, int x, int y, int tileIndex)
+        public Tile(int layerIndex, int x, int y, int tileIndex)
         {
-            this.l = l;
-            this.x = x;
-            this.y = y;
-            this.tileIndex = tileIndex;
+            this.LayerIndex = layerIndex;
+            this.X = x;
+            this.Y = y;
+            this.TileIndex = tileIndex;
         }
 
-        public Tile(int l, int x, int y, int tileIndex, int tileSheet)
+        public Tile(int layerIndex, int x, int y, int tileIndex, int tileSheet)
         {
-            this.l = l;
-            this.x = x;
-            this.y = y;
-            this.tileIndex = tileIndex;
-            this.tileSheet = tileSheet;
+            this.LayerIndex = layerIndex;
+            this.X = x;
+            this.Y = y;
+            this.TileIndex = tileIndex;
+            this.TileSheet = tileSheet;
         }
 
-        public static int getTileSheetIndex(string tileSheetName, ReadOnlyCollection<TileSheet> tileSheets)
+        public static int GetTileSheetIndex(string tileSheetName, ReadOnlyCollection<TileSheet> tileSheets)
         {
             for (int index = 0; index < tileSheets.Count; ++index)
             {
-                if (((Component)tileSheets[index]).get_Id().Equals(tileSheetName))
+                if (tileSheets[index].Id.Equals(tileSheetName))
                     return index;
             }
             return 0;
         }
 
-        public static string getTileSheetName(int tileSheetIndex, ReadOnlyCollection<TileSheet> tileSheets)
+        public static string GetTileSheetName(int tileSheetIndex, ReadOnlyCollection<TileSheet> tileSheets)
         {
             if (tileSheetIndex < tileSheets.Count)
-                return ((Component)tileSheets[tileSheetIndex]).get_Id();
-            Log.Error((object)"tileSheetIndex out of range");
+                return tileSheets[tileSheetIndex].Id;
+            Log.Error("tileSheetIndex out of range");
             return "";
         }
     }

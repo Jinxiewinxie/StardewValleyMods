@@ -12,11 +12,6 @@ namespace TaintedCellar
 
         public int yPositionOffset { get; set; }
 
-        public CellarConfig()
-        {
-            base.\u002Ector();
-        }
-
         public virtual T GenerateDefaultConfig<T>() where T : Config
         {
             this.onlyUnlockAfterFinalHouseUpgrade = false;
