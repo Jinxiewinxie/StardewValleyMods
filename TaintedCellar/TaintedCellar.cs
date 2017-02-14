@@ -70,8 +70,8 @@ namespace TaintedCellar
         /// <summary>Add the cellar location to the world.</summary>
         private void AddLocation()
         {
-            GameLocation location = new GameLocation(this.LoadMap(Path.Combine(Helper.DirectoryPath, "TaintedCellarMap.xnb")), "TaintedCellarMap");
-            location.map.GetTileSheet("Ztainted_cellar").ImageSource = "..\\mods\\TaintedCellar\\Ztainted_cellar";
+            GameLocation location = new GameLocation(this.LoadMap(Path.Combine(Helper.DirectoryPath, "assets", "TaintedCellarMap.xnb")), "TaintedCellarMap");
+            location.map.GetTileSheet("Ztainted_cellar").ImageSource = "..\\mods\\TaintedCellar\\assets\\Ztainted_cellar";
             location.map.LoadTileSheets(Game1.mapDisplayDevice);
             location.isOutdoors = false;
             location.isFarm = true;
@@ -85,7 +85,7 @@ namespace TaintedCellar
         /// <summary>Patch the farm map to </summary>
         private void PatchMap(Farm farm)
         {
-            farm.map.AddTileSheet(new TileSheet("Zpaths_objects_cellar", farm.map, "..\\mods\\TaintedCellar\\Zpaths_objects_cellar", new Size(32, 68), new Size(16, 16)));
+            farm.map.AddTileSheet(new TileSheet("Zpaths_objects_cellar", farm.map, "..\\mods\\TaintedCellar\\assets\\Zpaths_objects_cellar", new Size(32, 68), new Size(16, 16)));
             farm.map.LoadTileSheets(Game1.mapDisplayDevice);
             if (this.Config.FlipCellarEntrance)
             {
