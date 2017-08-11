@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -67,7 +68,7 @@ namespace TaintedCellar
         /// <summary>Add the cellar location to the world.</summary>
         private void AddLocation()
         {
-            GameLocation location = new GameLocation(this.Helper.Content.Load<Map>(@"assets\TaintedCellarMap.xnb"), "TaintedCellarMap")
+            GameLocation location = new GameLocation(this.Helper.Content.Load<Map>(@"assets\TaintedCellarMap.tbin"), "TaintedCellarMap")
             {
                 isOutdoors = false,
                 isFarm = true
@@ -83,7 +84,8 @@ namespace TaintedCellar
         /// <summary>Patch the farm map to add the cellar entrance.</summary>
         private void PatchMap(Farm farm)
         {
-            farm.map.AddTileSheet(new TileSheet("Zpaths_objects_cellar", farm.map, this.Helper.Content.GetActualAssetKey(@"assets\Zpaths_objects_cellar.xnb"), new Size(32, 68), new Size(16, 16)));
+            this.Helper.Content.Load<Texture2D>(@"assets\Zpaths_objects_cellar.png");
+            farm.map.AddTileSheet(new TileSheet("Zpaths_objects_cellar", farm.map, this.Helper.Content.GetActualAssetKey(@"assets\Zpaths_objects_cellar.png"), new Size(32, 68), new Size(16, 16)));
             farm.map.LoadTileSheets(Game1.mapDisplayDevice);
             if (this.Config.FlipCellarEntrance)
             {
