@@ -1,7 +1,4 @@
 ﻿using System;
-using System.IO;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -70,22 +67,23 @@ namespace TaintedCellar
         /// <summary>Add the cellar location to the world.</summary>
         private void AddLocation()
         {
-            GameLocation location = new GameLocation(this.LoadMap(Path.Combine(Helper.DirectoryPath, "assets", "TaintedCellarMap.xnb")), "TaintedCellarMap");
-            location.map.GetTileSheet("Ztainted_cellar").ImageSource = "..\\mods\\TaintedCellar\\assets\\Ztainted_cellar";
-            location.map.LoadTileSheets(Game1.mapDisplayDevice);
-            location.isOutdoors = false;
-            location.isFarm = true;
-            Game1.locations.Add(location);
+            GameLocation location = new GameLocation(this.Helper.Content.Load<Map>(@"assets\TaintedCellarMap.xnb"), "TaintedCellarMap")
+            {
+                isOutdoors = false,
+                isFarm = true
+            };
 
             int entranceX = (this.Config.FlipCellarEntrance ? 69 : 57) + this.Config.XPositionOffset;
             int entranceY = 12 + this.Config.YPositionOffset;
             location.setTileProperty(3, 3, "Buildings", "Action", $"Warp {entranceX} {entranceY} Farm");
+
+            Game1.locations.Add(location);
         }
 
-        /// <summary>Patch the farm map to </summary>
+        /// <summary>Patch the farm map to add the cellar entrance.</summary>
         private void PatchMap(Farm farm)
         {
-            farm.map.AddTileSheet(new TileSheet("Zpaths_objects_cellar", farm.map, "..\\mods\\TaintedCellar\\assets\\Zpaths_objects_cellar", new Size(32, 68), new Size(16, 16)));
+            farm.map.AddTileSheet(new TileSheet("Zpaths_objects_cellar", farm.map, this.Helper.Content.GetActualAssetKey(@"assets\Zpaths_objects_cellar.xnb"), new Size(32, 68), new Size(16, 16)));
             farm.map.LoadTileSheets(Game1.mapDisplayDevice);
             if (this.Config.FlipCellarEntrance)
             {
@@ -111,17 +109,6 @@ namespace TaintedCellar
             var properties = farm.map.GetTileSheet("Zpaths_objects_cellar").Properties;
             foreach (int tileID in new[] { 1865, 1897, 1866, 1898 })
                 properties.Add($"@TileIndex@{tileID}@Passable", new PropertyValue(true));
-        }
-
-        /// <summary>Load a map from an XNB file.</summary>
-        /// <param name="filePath">The absolute file path.</param>
-        private Map LoadMap(string filePath)
-        {
-            var contentManager = new ContentManager(new GameServiceContainer(), Path.GetDirectoryName(filePath));
-            Map map = contentManager.Load<Map>(Path.GetFileNameWithoutExtension(filePath));
-            if (map == null)
-                throw new FileLoadException("Could not load the map file.");
-            return map;
         }
 
         /// <summary>Get the tiles to change for the right-side cellar entrance.</summary>
