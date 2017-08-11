@@ -21,6 +21,7 @@ using xTile.ObjectModel;
 using xTile.Tiles;
 using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
+using SFarmer = StardewValley.Farmer;
 
 namespace WonderfulFarmLife
 {
@@ -60,7 +61,7 @@ namespace WonderfulFarmLife
             // hook up events
             SaveEvents.AfterLoad += this.ReceiveAfterLoad;
             LocationEvents.CurrentLocationChanged += this.ReceiveCurrentLocationChanged;
-            TimeEvents.DayOfMonthChanged += this.ReceiveDayOfMonthChanged;
+            TimeEvents.AfterDayStarted += this.ReceiveAfterDayStarted;
             ControlEvents.MouseChanged += this.Event_MouseChanged;
             ControlEvents.ControllerButtonPressed += this.Event_ControllerButtonPressed;
         }
@@ -96,7 +97,7 @@ namespace WonderfulFarmLife
         /// <summary>The event invoked when the day starts.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void ReceiveDayOfMonthChanged(object sender, EventArgs e)
+        private void ReceiveAfterDayStarted(object sender, EventArgs e)
         {
             this.UpdatePetBowlsForNewDay();
         }
@@ -343,7 +344,7 @@ namespace WonderfulFarmLife
         /// <summary>Add an item to the shipping bin.</summary>
         /// <param name="item">The item to ship.</param>
         /// <param name="player">The player in whose inventory the item is stored.</param>
-        private void ShipItem(Item item, Farmer player)
+        private void ShipItem(Item item, SFarmer player)
         {
             if (item == null)
                 return;
