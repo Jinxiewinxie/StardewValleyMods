@@ -1,0 +1,14 @@
+﻿{
+  "Name": "PondWithBridge",
+  "Authour": "Advize & Jinxiewinxie",
+  "Version": {
+    "MajorVersion": 0,
+    "MinorVersion": 0,
+    "PatchVersion": 0,
+    "Build": ""
+  },
+  "Description": "Adds a bridge over the lower pond on the farm",
+  "UniqueID": "",
+  "PerSaveConfigs": false,
+  "EntryDll": "PondWithBridge.dll"
+}
