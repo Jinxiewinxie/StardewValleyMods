@@ -45,6 +45,7 @@
     </None>
     <None Include="manifest.json" />
     <None Include="packages.config" />
+    <None Include="release-notes.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="alt cellar colors\creme\Zpaths_objects_cellar.png" />

@@ -9,5 +9,6 @@
   },
   "Description": "Adds a bunch of map edits to your farm",
   "UniqueID": "WonderfulFarmLife",
-  "EntryDll": "WonderfulFarmLife.dll"
+  "EntryDll": "WonderfulFarmLife.dll",
+  "UpdateKeys": [ "" ]
 }
