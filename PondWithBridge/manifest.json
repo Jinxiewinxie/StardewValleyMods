@@ -7,6 +7,7 @@
     "PatchVersion": 1,
     "Build": null
   },
+  "MinimumApiVersion": "1.15",
   "Description": "Adds a bridge over the lower pond on the farm",
   "UniqueID": "jinxiewinxie.StoneBridgeOverPond",
   "EntryDll": "PondWithBridge.dll",

@@ -9,37 +9,23 @@ namespace PondWithBridge
 {
     public class PondWithBridge : Mod
     {
-
-        public static bool farmModified = false;
-
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            GameEvents.SecondUpdateTick += Event_SecondUpdateTick;
+            SaveEvents.AfterLoad += SaveEvents_AfterLoad;
         }
 
-        private void Event_SecondUpdateTick(object sender, EventArgs e)
+        private void SaveEvents_AfterLoad(object sender, EventArgs e)
         {
+            Farm farm = Game1.getFarm();
+            farm.map.AddTileSheet(new TileSheet("Z", farm.map, Helper.Content.GetActualAssetKey("spring_town", ContentSource.GameContent), new xTile.Dimensions.Size(32, 62), new xTile.Dimensions.Size(16, 16)));
+            farm.map.LoadTileSheets(Game1.mapDisplayDevice);
 
-            if (Game1.hasLoadedGame && !farmModified)
-            {
-                Farm bridge = (Farm)Game1.getLocationFromName("Farm");
-                if (bridge != null)
-                {
-
-                    bridge.map.AddTileSheet(new TileSheet("Z", bridge.map, "..\\content\\spring_town", new xTile.Dimensions.Size(32, 62), new xTile.Dimensions.Size(16, 16)));
-                    bridge.map.LoadTileSheets(Game1.mapDisplayDevice);
-
-                    PatchMap(bridge, BridgeEdits);
-                    farmModified = true;
-
-                    GameEvents.UpdateTick -= Event_SecondUpdateTick;
-                }
-            }
+            PatchMap(farm, BridgeEdits);
         }
 
-        private static List<Tile> BridgeEdits = new List<Tile>()
+        private readonly List<Tile> BridgeEdits = new List<Tile>
         {
             //---tiles to null---
             new Tile(0, 40, 48, -1), new Tile(0, 41, 48, -1), //negative 1 layer
@@ -80,8 +66,8 @@ namespace PondWithBridge
 
         };
 
-      
-        private static void PatchMap(GameLocation gl, List<Tile> tileArray)
+
+        private void PatchMap(GameLocation gl, List<Tile> tileArray)
         {
             foreach (Tile tile in tileArray)
             {
@@ -89,7 +75,7 @@ namespace PondWithBridge
                 {
                     gl.removeTile(tile.x, tile.y, tile.layer);
                     gl.waterTiles[tile.x, tile.y] = false;
-                    
+
                     continue;
                 }
 
