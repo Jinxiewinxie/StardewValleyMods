@@ -6,5 +6,5 @@
   "Description": "Adds an underground cellar, complete with amenities only found in bomb shelters owned by paranoid survivalists or Cold War homeowners!",
   "UniqueID": "TaintedCellar",
   "EntryDll": "TaintedCellar.dll",
-  "UpdateKeys": []
+  "UpdateKeys": [ "Nexus:1672" ]
 }
