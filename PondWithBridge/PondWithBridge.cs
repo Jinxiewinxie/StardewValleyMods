@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -7,16 +6,20 @@ using xTile.Tiles;
 
 namespace PondWithBridge
 {
+    /// <summary>The mod entry class loaded by SMAPI.</summary>
     public class PondWithBridge : Mod
     {
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            SaveEvents.AfterLoad += SaveEvents_AfterLoad;
+            helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
         }
 
-        private void SaveEvents_AfterLoad(object sender, EventArgs e)
+        /// <summary>Raised after the player loads a save slot and the world is initialised.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
             Farm farm = Game1.getFarm();
             farm.map.AddTileSheet(new TileSheet("Z", farm.map, Helper.Content.GetActualAssetKey("spring_town", ContentSource.GameContent), new xTile.Dimensions.Size(32, 62), new xTile.Dimensions.Size(16, 16)));
@@ -130,8 +133,6 @@ namespace PondWithBridge
                     break;
                 case 4:
                     this.layer = "AlwaysFront";
-                    break;
-                default:
                     break;
             }
         }
