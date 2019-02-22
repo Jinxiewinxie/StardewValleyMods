@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -9,23 +14,16 @@ using xTile.Dimensions;
 using xTile.Layers;
 using xTile.ObjectModel;
 using xTile.Tiles;
-using System.Xml.Serialization;
-using System.IO;
-using System.Xml;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 
 namespace TaintedCellar
 {
- 
+    /// <summary>The mod entry class loaded by SMAPI.</summary>
     public class TaintedCellar : Mod
     {
-
         private CellarConfig Config;
-
         private XmlSerializer locationSerializer = new XmlSerializer(typeof(GameLocation));
         private GameLocation taintedCellar;
-        private Map map;
+        private string mapKey;
 
         public override void Entry(IModHelper helper)
         {
@@ -45,24 +43,23 @@ namespace TaintedCellar
 
             try
             {
-                //map = this.Helper.Content.Load<Map>("FarmExpansion.xnb", ContentSource.ModFolder);
-                map = this.Helper.Content.Load<Map>(@"assets\TaintedCellarMap.tbin");
-                //map.LoadTileSheets(Game1.mapDisplayDevice);
+                this.mapKey = this.Helper.Content.GetActualAssetKey("assets/TaintedCellarMap.tbin");
+                this.Helper.Content.Load<Map>("assets/TaintedCellarMap.tbin"); // initialise map
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.UnloadMod();
                 this.Monitor.Log(ex.Message, LogLevel.Error);
-                this.Monitor.Log($"Unable to load map file 'assets{Path.DirectorySeparatorChar.ToString()}TaintedCellarMap.tbin', unloading mod. Please try re-installing the mod.", LogLevel.Alert);
+                this.Monitor.Log($"Unable to load map file '{Path.Combine("assets", "TaintedCellarMap.tbin")}', unloading mod. Please try re-installing the mod.", LogLevel.Alert);
                 return;
             }
 
             if (!File.Exists(Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml")))
             {
-                taintedCellar = new GameLocation(map, "TaintedCellarMap")
+                taintedCellar = new GameLocation(this.mapKey, "TaintedCellarMap")
                 {
-                    isOutdoors = false,
-                    isFarm = true
+                    IsOutdoors = false,
+                    IsFarm = true
                 };
             }
             else
@@ -80,7 +77,7 @@ namespace TaintedCellar
 
         private void SaveEvents_BeforeSave(object sender, EventArgs e)
         {
-            Save();
+            this.Save();
             Game1.locations.Remove(taintedCellar);
         }
 
@@ -92,16 +89,13 @@ namespace TaintedCellar
         private void SaveEvents_AfterReturnToTitle(object sender, EventArgs e)
         {
             taintedCellar = null;
-            map = null;
         }
 
         private void Save()
         {
             string path = Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml");
 
-            string dir = Path.GetDirectoryName(path);
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var writer = XmlWriter.Create(path))
             {
@@ -112,10 +106,10 @@ namespace TaintedCellar
 
         private void Load()
         {
-            taintedCellar = new GameLocation(map, "TaintedCellarMap")
+            taintedCellar = new GameLocation(this.mapKey, "TaintedCellarMap")
             {
-                isOutdoors = false,
-                isFarm = true
+                IsOutdoors = false,
+                IsFarm = true
             };
 
             string path = Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml");
@@ -126,12 +120,12 @@ namespace TaintedCellar
                 loaded = (GameLocation)locationSerializer.Deserialize(reader);
             }
             //monitor.Log($"Object deserialized from {path}");
-                
+
             for (int i = loaded.characters.Count - 1; i >= 0; i--)
             {
                 if (!loaded.characters[i].DefaultPosition.Equals(Vector2.Zero))
                 {
-                    loaded.characters[i].position = loaded.characters[i].DefaultPosition;
+                    loaded.characters[i].Position = loaded.characters[i].DefaultPosition;
                 }
                 loaded.characters[i].currentLocation = taintedCellar;
                 if (i < loaded.characters.Count)
@@ -143,17 +137,19 @@ namespace TaintedCellar
             {
                 current.loadSprite();
             }
-            foreach (KeyValuePair<Vector2, StardewValley.Object> current in loaded.objects)
+            foreach (KeyValuePair<Vector2, StardewValley.Object> current in loaded.objects.Pairs)
             {
                 current.Value.initializeLightSource(current.Key);
                 current.Value.reloadSprite();
             }
 
-            taintedCellar.characters = loaded.characters;
-            taintedCellar.objects = loaded.objects;
+            taintedCellar.characters.Set(loaded.characters);
+            taintedCellar.largeTerrainFeatures.Set(loaded.largeTerrainFeatures);
             taintedCellar.numberOfSpawnedObjectsOnMap = loaded.numberOfSpawnedObjectsOnMap;
-            taintedCellar.terrainFeatures = loaded.terrainFeatures;
-            taintedCellar.largeTerrainFeatures = loaded.largeTerrainFeatures;
+            foreach (var pair in loaded.objects.Pairs)
+                taintedCellar.objects[pair.Key] = pair.Value;
+            foreach (var pair in loaded.terrainFeatures.Pairs)
+                taintedCellar.terrainFeatures[pair.Key] = pair.Value;
         }
 
         /// Patch the farm map to add the cellar entrance.
