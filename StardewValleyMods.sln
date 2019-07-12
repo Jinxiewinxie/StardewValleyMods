@@ -1,41 +1,44 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29020.237
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PondWithBridge", "PondWithBridge\PondWithBridge.csproj", "{84951614-87A6-46E1-A990-23A91734916B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".metadata", ".metadata", "{8BF08AEC-0DC5-4D23-A10A-C68D7191FFA4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{8BF08AEC-0DC5-4D23-A10A-C68D7191FFA4}"
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WonderfulFarmLife", "WonderfulFarmLife\WonderfulFarmLife.csproj", "{65D15CC6-CD00-4D7E-88F3-6A858F7319EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PondWithBridge", "PondWithBridge\PondWithBridge.csproj", "{BFAC1694-C661-4734-BC05-836380FC036A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaintedCellar", "TaintedCellar\TaintedCellar.csproj", "{810E75F0-3B61-4EF9-9711-9AE7A97C9109}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaintedCellar", "TaintedCellar\TaintedCellar.csproj", "{894BA7C6-B087-41E2-B7B5-7CCBBCEB9005}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WonderfulFarmLife", "WonderfulFarmLife\WonderfulFarmLife.csproj", "{F13ED90A-BD72-4EF6-9CE2-98A8FE7C8D94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{84951614-87A6-46E1-A990-23A91734916B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84951614-87A6-46E1-A990-23A91734916B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84951614-87A6-46E1-A990-23A91734916B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84951614-87A6-46E1-A990-23A91734916B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{65D15CC6-CD00-4D7E-88F3-6A858F7319EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65D15CC6-CD00-4D7E-88F3-6A858F7319EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65D15CC6-CD00-4D7E-88F3-6A858F7319EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65D15CC6-CD00-4D7E-88F3-6A858F7319EB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{810E75F0-3B61-4EF9-9711-9AE7A97C9109}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{810E75F0-3B61-4EF9-9711-9AE7A97C9109}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{810E75F0-3B61-4EF9-9711-9AE7A97C9109}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{810E75F0-3B61-4EF9-9711-9AE7A97C9109}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFAC1694-C661-4734-BC05-836380FC036A}.Debug|x86.ActiveCfg = Debug|x86
+		{BFAC1694-C661-4734-BC05-836380FC036A}.Debug|x86.Build.0 = Debug|x86
+		{BFAC1694-C661-4734-BC05-836380FC036A}.Release|x86.ActiveCfg = Release|x86
+		{BFAC1694-C661-4734-BC05-836380FC036A}.Release|x86.Build.0 = Release|x86
+		{894BA7C6-B087-41E2-B7B5-7CCBBCEB9005}.Debug|x86.ActiveCfg = Debug|x86
+		{894BA7C6-B087-41E2-B7B5-7CCBBCEB9005}.Debug|x86.Build.0 = Debug|x86
+		{894BA7C6-B087-41E2-B7B5-7CCBBCEB9005}.Release|x86.ActiveCfg = Release|x86
+		{894BA7C6-B087-41E2-B7B5-7CCBBCEB9005}.Release|x86.Build.0 = Release|x86
+		{F13ED90A-BD72-4EF6-9CE2-98A8FE7C8D94}.Debug|x86.ActiveCfg = Debug|x86
+		{F13ED90A-BD72-4EF6-9CE2-98A8FE7C8D94}.Debug|x86.Build.0 = Debug|x86
+		{F13ED90A-BD72-4EF6-9CE2-98A8FE7C8D94}.Release|x86.ActiveCfg = Release|x86
+		{F13ED90A-BD72-4EF6-9CE2-98A8FE7C8D94}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23773583-B766-44CE-9F0E-CD93EC763C46}
 	EndGlobalSection
 EndGlobal

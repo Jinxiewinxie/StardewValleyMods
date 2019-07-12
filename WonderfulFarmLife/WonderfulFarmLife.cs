@@ -399,7 +399,7 @@ namespace WonderfulFarmLife
 
         /// <summary>Read a tilesheet from the <c>overrides</c> folder, and write any overridden sprites onto the given texture.</summary>
         /// <param name="targetTexture">The texture to patch.</param>
-        /// <param name="overridingTexturePath">The filename within the <c>overrides</c> folder from which to read the tilesheet.</param>
+        /// <param name="overridingTexturePath">The filename within the <c>assets</c> folder from which to read the tilesheet.</param>
         /// <param name="spriteOverrides">The sprite indexes for new sprites.</param>
         /// <param name="gridWidth">The width of a tile in the tilesheet.</param>
         /// <param name="gridHeight">The height of each tile in the tilesheet.</param>
@@ -417,7 +417,7 @@ namespace WonderfulFarmLife
                 targetTexture.SetData(newPixels);
             }
 
-            using (FileStream fileStream = File.Open(Path.Combine(this.Helper.DirectoryPath, "overrides", overridingTexturePath), FileMode.Open))
+            using (FileStream fileStream = File.Open(Path.Combine(this.Helper.DirectoryPath, "assets", overridingTexturePath), FileMode.Open))
             {
                 Texture2D texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, fileStream);
                 foreach (KeyValuePair<int, int> spriteOverride in spriteOverrides)
