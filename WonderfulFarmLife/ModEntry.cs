@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -13,20 +12,20 @@ using StardewValley.Characters;
 using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
+using WonderfulFarmLife.Framework;
 using WonderfulFarmLife.Framework.Config;
 using WonderfulFarmLife.Framework.Constants;
 using xTile.Dimensions;
 using xTile.Layers;
 using xTile.ObjectModel;
 using xTile.Tiles;
-using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
-using SFarmer = StardewValley.Farmer;
+using SObject = StardewValley.Object;
 
 namespace WonderfulFarmLife
 {
     /// <summary>The main entry class for the mod.</summary>
-    internal class WonderfulFarmLife : Mod
+    internal class ModEntry : Mod
     {
         /*********
         ** Properties
@@ -53,17 +52,16 @@ namespace WonderfulFarmLife
         {
             // read config
             this.Config = helper.ReadConfig<ModConfig>();
-            this.LayoutConfig = helper.ReadJsonFile<DataModel>("data.json");
+            this.LayoutConfig = helper.Data.ReadJsonFile<DataModel>("data.json");
             if (!this.LayoutConfig.Tilesheets.ContainsKey("default"))
                 throw new KeyNotFoundException("The required 'default' tilesheet isn't specified in data.json.");
             this.DefaultTilesheet = this.LayoutConfig.Tilesheets["default"];
 
             // hook up events
-            SaveEvents.AfterLoad += this.ReceiveAfterLoad;
-            LocationEvents.CurrentLocationChanged += this.ReceiveCurrentLocationChanged;
-            TimeEvents.AfterDayStarted += this.ReceiveAfterDayStarted;
-            ControlEvents.MouseChanged += this.Event_MouseChanged;
-            ControlEvents.ControllerButtonPressed += this.Event_ControllerButtonPressed;
+            helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+            helper.Events.GameLoop.DayStarted += this.OnDayStarted;
+            helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            helper.Events.Player.Warped += this.OnWarped;
         }
 
 
@@ -73,66 +71,51 @@ namespace WonderfulFarmLife
         /****
         ** Events
         ****/
-        /// <summary>The event invoked after the player loads a saved game.</summary>
+        /// <summary>Raised after the player loads a save slot and the world is initialised.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void ReceiveAfterLoad(object sender, EventArgs e)
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
             this.ApplyMapOverrides();
         }
 
-        /// <summary>The event invoked when the player loads a new map.</summary>
+        /// <summary>Raised after a player warps to a new location.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void ReceiveCurrentLocationChanged(object sender, EventArgsCurrentLocationChanged e)
+        private void OnWarped(object sender, WarpedEventArgs e)
         {
-            // get farm
-            Farm farm = e.NewLocation as Farm;
-            if (farm == null)
-                return;
-
-            this.PrepareMapForRendering(farm);
+            if (e.IsLocalPlayer && e.NewLocation is Farm farm)
+                this.PrepareMapForRendering(farm);
         }
 
-        /// <summary>The event invoked when the day starts.</summary>
+        /// <summary>Raised after the game begins a new day (including when the player loads a save).</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void ReceiveAfterDayStarted(object sender, EventArgs e)
+        private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
             this.UpdatePetBowlsForNewDay();
         }
 
-        /// <summary>The event invoked when the player uses the mouse in some way.</summary>
+        /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void Event_MouseChanged(object sender, EventArgsMouseStateChanged e)
+        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!Game1.hasLoadedGame)
+            if (!Context.IsWorldReady)
                 return;
 
-            if (e.NewState.RightButton == ButtonState.Pressed && e.PriorState.RightButton != ButtonState.Pressed)
-                this.TryAction();
-            else if (e.NewState.LeftButton == ButtonState.Pressed && e.PriorState.LeftButton != ButtonState.Pressed)
+            switch (e.Button)
             {
-                if (!this.TryFillPetBowls(Game1.getFarm(), this.GetActionCursor()))
+                case SButton.MouseRight:
+                case SButton.ControllerA:
                     this.TryAction();
-            }
-        }
+                    break;
 
-        /// <summary>The event invoked when the player presses a controller button.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void Event_ControllerButtonPressed(object sender, EventArgsControllerButtonPressed e)
-        {
-            if (!Game1.hasLoadedGame)
-                return;
-
-            if (e.ButtonPressed == Buttons.A)
-                this.TryAction();
-            if (e.ButtonPressed == Buttons.X)
-            {
-                if (!this.TryFillPetBowls(Game1.getFarm(), this.GetActionCursor()))
-                    this.TryAction();
+                case SButton.MouseLeft:
+                case SButton.ControllerX:
+                    if (!this.TryFillPetBowls(Game1.getFarm(), this.GetActionCursor()))
+                        this.TryAction();
+                    break;
             }
         }
 
@@ -190,11 +173,11 @@ namespace WonderfulFarmLife
         {
             // remove shipping bin sprite
             if (this.Config.RemoveShippingBin)
-                this.Helper.Reflection.GetPrivateField<TemporaryAnimatedSprite>(farm, "shippingBinLid").SetValue(null);
+                this.Helper.Reflection.GetField<TemporaryAnimatedSprite>(farm, "shippingBinLid").SetValue(null);
 
             // patch tilesheet before draw
             TileSheet tileSheet = farm.map.GetTileSheet(FarmTilesheet.Outdoors);
-            var sheetTextures = this.Helper.Reflection.GetPrivateValue<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures");
+            var sheetTextures = this.Helper.Reflection.GetField<Dictionary<TileSheet, Texture2D>>(Game1.mapDisplayDevice, "m_tileSheetTextures").GetValue();
             Texture2D targetTexture = sheetTextures[tileSheet];
             Dictionary<int, int> spriteOverrides = new Dictionary<int, int>();
             for (int key = 0; key < 1100; ++key)
@@ -265,15 +248,14 @@ namespace WonderfulFarmLife
             if (Game1.numberOfSelectedItems != -1 || Game1.activeClickableMenu != null)
                 return false;
 
-            // get tile undor cursor
+            // get tile under cursor
             Vector2 actionPos = this.GetActionCursor();
             Tile actionTile = Game1.currentLocation.map.GetLayer("Buildings").Tiles[(int)actionPos.X, (int)actionPos.Y];
             if (actionTile == null)
                 return false;
 
             // get tile action
-            PropertyValue propertyValue;
-            actionTile.Properties.TryGetValue("Action", out propertyValue);
+            actionTile.Properties.TryGetValue("Action", out PropertyValue propertyValue);
             if (propertyValue == null)
                 return false;
             string action = propertyValue.ToString();
@@ -344,14 +326,14 @@ namespace WonderfulFarmLife
         /// <summary>Add an item to the shipping bin.</summary>
         /// <param name="item">The item to ship.</param>
         /// <param name="player">The player in whose inventory the item is stored.</param>
-        private void ShipItem(Item item, SFarmer player)
+        private void ShipItem(Item item, Farmer player)
         {
             if (item == null)
                 return;
 
             Farm farm = Game1.getFarm();
             farm.shippingBin.Add(item);
-            if (item is Object)
+            if (item is SObject)
                 DelayedAction.playSoundAfterDelay("Ship", 0);
             farm.lastItemShipped = item;
             player.removeItemFromInventory(item);
@@ -415,7 +397,7 @@ namespace WonderfulFarmLife
 
         /// <summary>Read a tilesheet from the <c>overrides</c> folder, and write any overridden sprites onto the given texture.</summary>
         /// <param name="targetTexture">The texture to patch.</param>
-        /// <param name="overridingTexturePath">The filename within the <c>overrides</c> folder from which to read the tilesheet.</param>
+        /// <param name="overridingTexturePath">The filename within the <c>assets</c> folder from which to read the tilesheet.</param>
         /// <param name="spriteOverrides">The sprite indexes for new sprites.</param>
         /// <param name="gridWidth">The width of a tile in the tilesheet.</param>
         /// <param name="gridHeight">The height of each tile in the tilesheet.</param>
@@ -433,7 +415,7 @@ namespace WonderfulFarmLife
                 targetTexture.SetData(newPixels);
             }
 
-            using (FileStream fileStream = File.Open(Path.Combine(this.Helper.DirectoryPath, "overrides", overridingTexturePath), FileMode.Open))
+            using (FileStream fileStream = File.Open(Path.Combine(this.Helper.DirectoryPath, "assets", overridingTexturePath), FileMode.Open))
             {
                 Texture2D texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, fileStream);
                 foreach (KeyValuePair<int, int> spriteOverride in spriteOverrides)

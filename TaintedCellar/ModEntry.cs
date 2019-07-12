@@ -1,159 +1,168 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.TerrainFeatures;
+using TaintedCellar.Framework;
 using xTile;
 using xTile.Dimensions;
 using xTile.Layers;
 using xTile.ObjectModel;
 using xTile.Tiles;
-using System.Xml.Serialization;
-using System.IO;
-using System.Xml;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using Tile = TaintedCellar.Framework.Tile;
 
 namespace TaintedCellar
 {
- 
-    public class TaintedCellar : Mod
+    /// <summary>The mod entry class loaded by SMAPI.</summary>
+    public class ModEntry : Mod
     {
-
+        /*********
+        ** Fields
+        *********/
+        private readonly string MapAssetKey = "assets/TaintedCellarMap.tbin";
+        private string SaveDataPath => Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml");
         private CellarConfig Config;
+        private readonly XmlSerializer LocationSerializer = new XmlSerializer(typeof(GameLocation));
+        private GameLocation TaintedCellar;
 
-        private XmlSerializer locationSerializer = new XmlSerializer(typeof(GameLocation));
-        private GameLocation taintedCellar;
-        private Map map;
 
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
             this.Config = helper.ReadConfig<CellarConfig>();
-            SaveEvents.AfterLoad += this.SaveEvents_AfterLoad;
-            SaveEvents.BeforeSave += this.SaveEvents_BeforeSave;
-            SaveEvents.AfterSave += this.SaveEvents_AfterSave;
-            SaveEvents.AfterReturnToTitle += this.SaveEvents_AfterReturnToTitle;
+            helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+            helper.Events.GameLoop.Saving += this.OnSaving;
+            helper.Events.GameLoop.Saved += this.OnSaved;
+            helper.Events.GameLoop.ReturnedToTitle += this.OnReturnedToTitle;
         }
 
-        private void SaveEvents_AfterLoad(object sender, EventArgs e)
+
+        /*********
+        ** Private methods
+        *********/
+        /// <summary>Raised after the player loads a save slot and the world is initialised.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
             if (this.Config.OnlyUnlockAfterFinalHouseUpgrade && Game1.player.HouseUpgradeLevel < 3)
-            {
                 return;
-            }
 
             try
             {
-                //map = this.Helper.Content.Load<Map>("FarmExpansion.xnb", ContentSource.ModFolder);
-                map = this.Helper.Content.Load<Map>(@"assets\TaintedCellarMap.tbin");
-                //map.LoadTileSheets(Game1.mapDisplayDevice);
+                var map = this.Helper.Content.Load<Map>(this.MapAssetKey); // initialise map
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.UnloadMod();
                 this.Monitor.Log(ex.Message, LogLevel.Error);
-                this.Monitor.Log($"Unable to load map file 'assets{Path.DirectorySeparatorChar.ToString()}TaintedCellarMap.tbin', unloading mod. Please try re-installing the mod.", LogLevel.Alert);
+                this.Monitor.Log($"Unable to load map file '{this.MapAssetKey}', unloading mod. Please try re-installing the mod.", LogLevel.Alert);
                 return;
             }
 
-            if (!File.Exists(Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml")))
-            {
-                taintedCellar = new GameLocation(map, "TaintedCellarMap")
-                {
-                    isOutdoors = false,
-                    isFarm = true
-                };
-            }
-            else
-            {
-                Load();
-            }
+            TaintedCellar = this.Load();
 
-            int entranceX = (this.Config.FlipCellarEntrance ? 69 : 57) + this.Config.XPositionOffset;
-            int entranceY = 12 + this.Config.YPositionOffset;
-            taintedCellar.setTileProperty(3, 3, "Buildings", "Action", $"Warp {entranceX} {entranceY} Farm");
-
-            Game1.locations.Add(taintedCellar);
+            Game1.locations.Add(TaintedCellar);
             this.PatchMap(Game1.getFarm());
         }
 
-        private void SaveEvents_BeforeSave(object sender, EventArgs e)
+        /// <summary>Raised before the game begins writes data to the save file (except the initial save creation).</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        private void OnSaving(object sender, SavingEventArgs e)
         {
-            Save();
-            Game1.locations.Remove(taintedCellar);
+            this.Save();
+            Game1.locations.Remove(TaintedCellar);
         }
 
-        private void SaveEvents_AfterSave(object sender, EventArgs e)
+        /// <summary>Raised after the game finishes writing data to the save file (except the initial save creation).</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        private void OnSaved(object sender, SavedEventArgs e)
         {
-            Game1.locations.Add(taintedCellar);
+            Game1.locations.Add(TaintedCellar);
         }
 
-        private void SaveEvents_AfterReturnToTitle(object sender, EventArgs e)
+        /// <summary>Raised after the game returns to the title screen.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e)
         {
-            taintedCellar = null;
-            map = null;
+            TaintedCellar = null;
         }
 
         private void Save()
         {
             string path = Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml");
 
-            string dir = Path.GetDirectoryName(path);
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var writer = XmlWriter.Create(path))
             {
-                locationSerializer.Serialize(writer, taintedCellar);
+                LocationSerializer.Serialize(writer, TaintedCellar);
             }
             //monitor.Log($"Object serialized to {path}");
         }
 
-        private void Load()
+        /// <summary>Load the in-game location.</summary>
+        private GameLocation Load()
         {
-            taintedCellar = new GameLocation(map, "TaintedCellarMap")
+            var location = new GameLocation(this.Helper.Content.GetActualAssetKey(this.MapAssetKey), "TaintedCellarMap")
             {
-                isOutdoors = false,
-                isFarm = true
+                IsOutdoors = false,
+                IsFarm = true
             };
 
-            string path = Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml");
+            if (File.Exists(this.SaveDataPath))
+            {
+                GameLocation loaded;
+                using (var reader = XmlReader.Create(this.SaveDataPath))
+                    loaded = (GameLocation)LocationSerializer.Deserialize(reader);
 
-            GameLocation loaded;
-            using (var reader = XmlReader.Create(path))
-            {
-                loaded = (GameLocation)locationSerializer.Deserialize(reader);
-            }
-            //monitor.Log($"Object deserialized from {path}");
-                
-            for (int i = loaded.characters.Count - 1; i >= 0; i--)
-            {
-                if (!loaded.characters[i].DefaultPosition.Equals(Vector2.Zero))
+                //monitor.Log($"Object deserialized from {path}");
+
+                for (int i = loaded.characters.Count - 1; i >= 0; i--)
                 {
-                    loaded.characters[i].position = loaded.characters[i].DefaultPosition;
+                    if (!loaded.characters[i].DefaultPosition.Equals(Vector2.Zero))
+                        loaded.characters[i].Position = loaded.characters[i].DefaultPosition;
+                    loaded.characters[i].currentLocation = location
+;
+                    if (i < loaded.characters.Count)
+                        loaded.characters[i].reloadSprite();
                 }
-                loaded.characters[i].currentLocation = taintedCellar;
-                if (i < loaded.characters.Count)
+                foreach (TerrainFeature current in loaded.terrainFeatures.Values)
+                    current.loadSprite();
+
+                foreach (KeyValuePair<Vector2, StardewValley.Object> current in loaded.objects.Pairs)
                 {
-                    loaded.characters[i].reloadSprite();
+                    current.Value.initializeLightSource(current.Key);
+                    current.Value.reloadSprite();
                 }
-            }
-            foreach (TerrainFeature current in loaded.terrainFeatures.Values)
-            {
-                current.loadSprite();
-            }
-            foreach (KeyValuePair<Vector2, StardewValley.Object> current in loaded.objects)
-            {
-                current.Value.initializeLightSource(current.Key);
-                current.Value.reloadSprite();
+
+                location.characters.Set(loaded.characters);
+                location.largeTerrainFeatures.Set(loaded.largeTerrainFeatures);
+                location.numberOfSpawnedObjectsOnMap = loaded.numberOfSpawnedObjectsOnMap;
+                foreach (var pair in loaded.objects.Pairs)
+                    location.objects[pair.Key] = pair.Value;
+                foreach (var pair in loaded.terrainFeatures.Pairs)
+                    location.terrainFeatures[pair.Key] = pair.Value;
             }
 
-            taintedCellar.characters = loaded.characters;
-            taintedCellar.objects = loaded.objects;
-            taintedCellar.numberOfSpawnedObjectsOnMap = loaded.numberOfSpawnedObjectsOnMap;
-            taintedCellar.terrainFeatures = loaded.terrainFeatures;
-            taintedCellar.largeTerrainFeatures = loaded.largeTerrainFeatures;
+            int entranceX = (this.Config.FlipCellarEntrance ? 69 : 57) + this.Config.XPositionOffset;
+            int entranceY = 12 + this.Config.YPositionOffset;
+            location.setTileProperty(3, 3, "Buildings", "Action", $"Warp {entranceX} {entranceY} Farm");
+
+            return location;
         }
 
         /// Patch the farm map to add the cellar entrance.
@@ -252,10 +261,10 @@ namespace TaintedCellar
 
         private void UnloadMod()
         {
-            SaveEvents.AfterLoad -= this.SaveEvents_AfterLoad;
-            SaveEvents.BeforeSave -= this.SaveEvents_BeforeSave;
-            SaveEvents.AfterSave -= this.SaveEvents_AfterSave;
-            SaveEvents.AfterReturnToTitle -= this.SaveEvents_AfterReturnToTitle;
+            this.Helper.Events.GameLoop.SaveLoaded -= this.OnSaveLoaded;
+            this.Helper.Events.GameLoop.Saving -= this.OnSaving;
+            this.Helper.Events.GameLoop.Saved -= this.OnSaved;
+            this.Helper.Events.GameLoop.ReturnedToTitle -= this.OnReturnedToTitle;
         }
     }
 }
