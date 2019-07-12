@@ -15,7 +15,7 @@
         /// <summary>The X tile coordinate.</summary>
         public int X;
 
-        /// <summary>The X tile coordinate.</summary>
+        /// <summary>The Y tile coordinate.</summary>
         public int Y;
 
         /// <summary>The tile ID in the tilesheet.</summary>
@@ -28,7 +28,7 @@
         /// <summary>Construct an instance.</summary>
         /// <param name="layerIndex">The layer index to modify.</param>
         /// <param name="x">The X tile coordinate.</param>
-        /// <param name="y">The X tile coordinate.</param>
+        /// <param name="y">The Y tile coordinate.</param>
         /// <param name="tileIndex">The tilesheet ID to modify.</param>
         /// <param name="tilesheet">The tilesheet to modify.</param>
         public Tile(int layerIndex, int x, int y, int tileIndex, string tilesheet)

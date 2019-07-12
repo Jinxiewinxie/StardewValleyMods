@@ -10,25 +10,9 @@ namespace PondWithBridge
     /// <summary>The mod entry class loaded by SMAPI.</summary>
     public class ModEntry : Mod
     {
-        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
-        /// <param name="helper">Provides simplified APIs for writing mods.</param>
-        public override void Entry(IModHelper helper)
-        {
-            helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
-        }
-
-        /// <summary>Raised after the player loads a save slot and the world is initialised.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event data.</param>
-        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
-        {
-            Farm farm = Game1.getFarm();
-            farm.map.AddTileSheet(new TileSheet("Z", farm.map, Helper.Content.GetActualAssetKey("spring_town", ContentSource.GameContent), new xTile.Dimensions.Size(32, 62), new xTile.Dimensions.Size(16, 16)));
-            farm.map.LoadTileSheets(Game1.mapDisplayDevice);
-
-            PatchMap(farm, BridgeEdits);
-        }
-
+        /*********
+        ** Fields
+        *********/
         private readonly List<Tile> BridgeEdits = new List<Tile>
         {
             //---tiles to null---
@@ -71,25 +55,51 @@ namespace PondWithBridge
         };
 
 
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
+        public override void Entry(IModHelper helper)
+        {
+            helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        }
+
+
+        /*********
+        ** Private methods
+        *********/
+        /// <summary>Raised after the player loads a save slot and the world is initialised.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
+        {
+            Farm farm = Game1.getFarm();
+            farm.map.AddTileSheet(new TileSheet("Z", farm.map, Helper.Content.GetActualAssetKey("spring_town", ContentSource.GameContent), new xTile.Dimensions.Size(32, 62), new xTile.Dimensions.Size(16, 16)));
+            farm.map.LoadTileSheets(Game1.mapDisplayDevice);
+
+            PatchMap(farm, BridgeEdits);
+        }
+
         private void PatchMap(GameLocation gl, List<Tile> tileArray)
         {
             foreach (Tile tile in tileArray)
             {
-                if (tile.tileIndex < 0)
+                if (tile.TileIndex < 0)
                 {
-                    gl.removeTile(tile.x, tile.y, tile.layer);
-                    gl.waterTiles[tile.x, tile.y] = false;
+                    gl.removeTile(tile.X, tile.Y, tile.LayerName);
+                    gl.waterTiles[tile.X, tile.Y] = false;
 
                     continue;
                 }
 
-                if (gl.map.Layers[tile.l].Tiles[tile.x, tile.y] == null)
+                if (gl.map.Layers[tile.LayerIndex].Tiles[tile.X, tile.Y] == null)
                 {
-                    gl.map.Layers[tile.l].Tiles[tile.x, tile.y] = new StaticTile(gl.map.GetLayer(tile.layer), gl.map.TileSheets[tile.tileSheet], xTile.Tiles.BlendMode.Alpha, tile.tileIndex);
+                    gl.map.Layers[tile.LayerIndex].Tiles[tile.X, tile.Y] = new StaticTile(gl.map.GetLayer(tile.LayerName), gl.map.TileSheets[tile.Tilesheet], BlendMode.Alpha, tile.TileIndex);
                 }
                 else
                 {
-                    gl.setMapTileIndex(tile.x, tile.y, tile.tileIndex, tile.layer);
+                    gl.setMapTileIndex(tile.X, tile.Y, tile.TileIndex, tile.LayerName);
                 }
             }
         }

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -20,9 +19,8 @@ using xTile.Dimensions;
 using xTile.Layers;
 using xTile.ObjectModel;
 using xTile.Tiles;
-using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
-using SFarmer = StardewValley.Farmer;
+using SObject = StardewValley.Object;
 
 namespace WonderfulFarmLife
 {
@@ -250,15 +248,14 @@ namespace WonderfulFarmLife
             if (Game1.numberOfSelectedItems != -1 || Game1.activeClickableMenu != null)
                 return false;
 
-            // get tile undor cursor
+            // get tile under cursor
             Vector2 actionPos = this.GetActionCursor();
             Tile actionTile = Game1.currentLocation.map.GetLayer("Buildings").Tiles[(int)actionPos.X, (int)actionPos.Y];
             if (actionTile == null)
                 return false;
 
             // get tile action
-            PropertyValue propertyValue;
-            actionTile.Properties.TryGetValue("Action", out propertyValue);
+            actionTile.Properties.TryGetValue("Action", out PropertyValue propertyValue);
             if (propertyValue == null)
                 return false;
             string action = propertyValue.ToString();
@@ -329,14 +326,14 @@ namespace WonderfulFarmLife
         /// <summary>Add an item to the shipping bin.</summary>
         /// <param name="item">The item to ship.</param>
         /// <param name="player">The player in whose inventory the item is stored.</param>
-        private void ShipItem(Item item, SFarmer player)
+        private void ShipItem(Item item, Farmer player)
         {
             if (item == null)
                 return;
 
             Farm farm = Game1.getFarm();
             farm.shippingBin.Add(item);
-            if (item is Object)
+            if (item is SObject)
                 DelayedAction.playSoundAfterDelay("Ship", 0);
             farm.lastItemShipped = item;
             player.removeItemFromInventory(item);

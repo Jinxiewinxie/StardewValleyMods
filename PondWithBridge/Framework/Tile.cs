@@ -1,51 +1,63 @@
 ﻿namespace PondWithBridge.Framework
 {
+    /// <summary>Defines an override to apply to a tile position.</summary>
     public class Tile
     {
-        public int l;
-        public int x;
-        public int y;
-        public int tileIndex;
-        public string layer;
-        public int tileSheet = 1;
+        /*********
+        ** Accessors
+        *********/
+        /// <summary>The layer index to modify.</summary>
+        public int LayerIndex;
 
-        public Tile(int l, int x, int y, int tileIndex)
-        {
-            this.l = l;
-            this.x = x;
-            this.y = y;
-            this.tileIndex = tileIndex;
-            setLayerName(l);
-        }
+        /// <summary>The X tile coordinate.</summary>
+        public int X;
 
-        public Tile(int l, int x, int y, int tileIndex, int tileSheet)
-        {
-            this.l = l;
-            this.x = x;
-            this.y = y;
-            this.tileIndex = tileIndex;
-            this.tileSheet = tileSheet;
-            setLayerName(l);
-        }
+        /// <summary>The Y tile coordinate.</summary>
+        public int Y;
 
-        public void setLayerName(int l)
+        /// <summary>The tile ID in the tilesheet.</summary>
+        public int TileIndex;
+
+        /// <summary>The layer name to modify.</summary>
+        public string LayerName { get; }
+
+        /// <summary>The tilesheet index to modify.</summary>
+        public int Tilesheet;
+
+
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        /// <param name="layerIndex">The layer index to modify.</param>
+        /// <param name="x">The X tile coordinate.</param>
+        /// <param name="y">The Y tile coordinate.</param>
+        /// <param name="tileIndex">The tilesheet index to modify.</param>
+        /// <param name="tilesheet">The tilesheet index to modify.</param>
+        public Tile(int layerIndex, int x, int y, int tileIndex, int tilesheet = 1)
         {
-            switch (l)
+            this.LayerIndex = layerIndex;
+            this.X = x;
+            this.Y = y;
+            this.TileIndex = tileIndex;
+            this.Tilesheet = tilesheet;
+
+            switch (layerIndex)
             {
                 case 0:
-                    this.layer = "Back";
+                    this.LayerName = "Back";
                     break;
                 case 1:
-                    this.layer = "Buildings";
+                    this.LayerName = "Buildings";
                     break;
                 case 2:
-                    this.layer = "Paths";
+                    this.LayerName = "Paths";
                     break;
                 case 3:
-                    this.layer = "Front";
+                    this.LayerName = "Front";
                     break;
                 case 4:
-                    this.layer = "AlwaysFront";
+                    this.LayerName = "AlwaysFront";
                     break;
             }
         }

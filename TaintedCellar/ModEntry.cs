@@ -22,12 +22,19 @@ namespace TaintedCellar
     /// <summary>The mod entry class loaded by SMAPI.</summary>
     public class ModEntry : Mod
     {
+        /*********
+        ** Fields
+        *********/
         private readonly string MapAssetKey = "assets/TaintedCellarMap.tbin";
         private string SaveDataPath => Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml");
         private CellarConfig Config;
-        private XmlSerializer locationSerializer = new XmlSerializer(typeof(GameLocation));
-        private GameLocation taintedCellar;
+        private readonly XmlSerializer LocationSerializer = new XmlSerializer(typeof(GameLocation));
+        private GameLocation TaintedCellar;
 
+
+        /*********
+        ** Public methods
+        *********/
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
@@ -39,6 +46,10 @@ namespace TaintedCellar
             helper.Events.GameLoop.ReturnedToTitle += this.OnReturnedToTitle;
         }
 
+
+        /*********
+        ** Private methods
+        *********/
         /// <summary>Raised after the player loads a save slot and the world is initialised.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
@@ -59,9 +70,9 @@ namespace TaintedCellar
                 return;
             }
 
-            taintedCellar = this.Load();
+            TaintedCellar = this.Load();
 
-            Game1.locations.Add(taintedCellar);
+            Game1.locations.Add(TaintedCellar);
             this.PatchMap(Game1.getFarm());
         }
 
@@ -71,7 +82,7 @@ namespace TaintedCellar
         private void OnSaving(object sender, SavingEventArgs e)
         {
             this.Save();
-            Game1.locations.Remove(taintedCellar);
+            Game1.locations.Remove(TaintedCellar);
         }
 
         /// <summary>Raised after the game finishes writing data to the save file (except the initial save creation).</summary>
@@ -79,7 +90,7 @@ namespace TaintedCellar
         /// <param name="e">The event data.</param>
         private void OnSaved(object sender, SavedEventArgs e)
         {
-            Game1.locations.Add(taintedCellar);
+            Game1.locations.Add(TaintedCellar);
         }
 
         /// <summary>Raised after the game returns to the title screen.</summary>
@@ -87,7 +98,7 @@ namespace TaintedCellar
         /// <param name="e">The event data.</param>
         private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e)
         {
-            taintedCellar = null;
+            TaintedCellar = null;
         }
 
         private void Save()
@@ -98,7 +109,7 @@ namespace TaintedCellar
 
             using (var writer = XmlWriter.Create(path))
             {
-                locationSerializer.Serialize(writer, taintedCellar);
+                LocationSerializer.Serialize(writer, TaintedCellar);
             }
             //monitor.Log($"Object serialized to {path}");
         }
@@ -116,7 +127,7 @@ namespace TaintedCellar
             {
                 GameLocation loaded;
                 using (var reader = XmlReader.Create(this.SaveDataPath))
-                    loaded = (GameLocation)locationSerializer.Deserialize(reader);
+                    loaded = (GameLocation)LocationSerializer.Deserialize(reader);
 
                 //monitor.Log($"Object deserialized from {path}");
 
