@@ -1,7 +1,7 @@
-﻿namespace TaintedCellar
+﻿namespace TaintedCellar.Framework
 {
     /// <summary>Defines an override to apply to a tile position.</summary>
-    public class Tile
+    internal class Tile
     {
         /*********
         ** Accessors

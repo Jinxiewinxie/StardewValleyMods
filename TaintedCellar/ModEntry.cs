@@ -9,16 +9,18 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.TerrainFeatures;
+using TaintedCellar.Framework;
 using xTile;
 using xTile.Dimensions;
 using xTile.Layers;
 using xTile.ObjectModel;
 using xTile.Tiles;
+using Tile = TaintedCellar.Framework.Tile;
 
 namespace TaintedCellar
 {
     /// <summary>The mod entry class loaded by SMAPI.</summary>
-    public class TaintedCellar : Mod
+    public class ModEntry : Mod
     {
         private readonly string MapAssetKey = "assets/TaintedCellarMap.tbin";
         private string SaveDataPath => Path.Combine(this.Helper.DirectoryPath, "pslocationdata", $"{Constants.SaveFolderName}.xml");

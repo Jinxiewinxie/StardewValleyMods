@@ -1,7 +1,7 @@
-namespace TaintedCellar
+namespace TaintedCellar.Framework
 {
     /// <summary>The mod configuration.</summary>
-    public class CellarConfig
+    internal class CellarConfig
     {
         /*********
         ** Accessors

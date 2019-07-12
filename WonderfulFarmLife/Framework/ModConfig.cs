@@ -1,7 +1,7 @@
-namespace WonderfulFarmLife
+namespace WonderfulFarmLife.Framework
 {
     /// <summary>The mod configuration model.</summary>
-    public class ModConfig
+    internal class ModConfig
     {
         /*********
         ** Accessors

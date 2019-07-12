@@ -13,6 +13,7 @@ using StardewValley.Characters;
 using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
+using WonderfulFarmLife.Framework;
 using WonderfulFarmLife.Framework.Config;
 using WonderfulFarmLife.Framework.Constants;
 using xTile.Dimensions;
@@ -26,7 +27,7 @@ using SFarmer = StardewValley.Farmer;
 namespace WonderfulFarmLife
 {
     /// <summary>The main entry class for the mod.</summary>
-    internal class WonderfulFarmLife : Mod
+    internal class ModEntry : Mod
     {
         /*********
         ** Properties
