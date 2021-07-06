@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -13,13 +13,13 @@ namespace PondWithBridge
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            SaveEvents.AfterLoad += SaveEvents_AfterLoad;
+            this.Helper.Events.GameLoop.SaveLoaded += SaveEvents_AfterLoad;
         }
 
         private void SaveEvents_AfterLoad(object sender, EventArgs e)
         {
             Farm farm = Game1.getFarm();
-            farm.map.AddTileSheet(new TileSheet("Z", farm.map, Helper.Content.GetActualAssetKey("spring_town", ContentSource.GameContent), new xTile.Dimensions.Size(32, 62), new xTile.Dimensions.Size(16, 16)));
+            farm.map.AddTileSheet(new TileSheet("Z", farm.map, Helper.Content.GetActualAssetKey("Maps/spring_town", ContentSource.GameContent), new xTile.Dimensions.Size(32, 62), new xTile.Dimensions.Size(16, 16)));
             farm.map.LoadTileSheets(Game1.mapDisplayDevice);
 
             PatchMap(farm, BridgeEdits);
